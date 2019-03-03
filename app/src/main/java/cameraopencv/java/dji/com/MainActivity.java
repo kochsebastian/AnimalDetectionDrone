@@ -43,8 +43,8 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
 
     protected TextureView mVideoSurface = null;
     protected ImageView mImageSurface;
-    private Button mCaptureBtn, mShootPhotoModeBtn, mRecordVideoModeBtn;
-    private ToggleButton mRecordBtn;
+   // private Button mCaptureBtn, mShootPhotoModeBtn, mRecordVideoModeBtn;
+    //private ToggleButton mRecordBtn;
     private TextView recordingTime;
 
     private Boolean scanning = false;
@@ -128,9 +128,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
                     }
                 }
             });
-            if(camera.isThermalCamera()){
-                camera.setThermalPalette(SettingsDefinitions.ThermalPalette.WHITE_HOT,null);
-            }
+            calibrateCamera(camera);
 
         }
 
@@ -205,25 +203,25 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
         // init mVideoSurface
         mVideoSurface = (TextureView)findViewById(R.id.video_previewer_surface);
         mImageSurface = (ImageView)findViewById(R.id.image_previewer_surface);
-        mImageSurface.bringToFront();
+     //   mImageSurface.bringToFront();
         recordingTime = (TextView) findViewById(R.id.timer);
-        mCaptureBtn = (Button) findViewById(R.id.btn_capture);
+      /*  mCaptureBtn = (Button) findViewById(R.id.btn_capture);
         mRecordBtn = (ToggleButton) findViewById(R.id.btn_record);
         mShootPhotoModeBtn = (Button) findViewById(R.id.btn_shoot_photo_mode);
         mRecordVideoModeBtn = (Button) findViewById(R.id.btn_record_video_mode);
-
+*/
         if (null != mVideoSurface) {
             mVideoSurface.setSurfaceTextureListener(this);
         }
 
-        mCaptureBtn.setOnClickListener(this);
+       /* mCaptureBtn.setOnClickListener(this);
         mRecordBtn.setOnClickListener(this);
         mShootPhotoModeBtn.setOnClickListener(this);
-        mRecordVideoModeBtn.setOnClickListener(this);
+        mRecordVideoModeBtn.setOnClickListener(this);*/
 
         recordingTime.setVisibility(View.INVISIBLE);
 
-        mRecordBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+      /*  mRecordBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
@@ -232,7 +230,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
                     stopRecord();
                 }
             }
-        });
+        });*/
     }
 
     private void initPreviewer() {
@@ -302,19 +300,19 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
     public void onClick(View v) {
 
         switch (v.getId()) {
-            case R.id.btn_capture:{
+            /*case R.id.btn_capture:{
                 captureAction();
                 break;
             }
             case R.id.btn_shoot_photo_mode:{
-                testOpenCV();
-             //   switchCameraMode(SettingsDefinitions.CameraMode.SHOOT_PHOTO);
+
+                switchCameraMode(SettingsDefinitions.CameraMode.SHOOT_PHOTO);
                 break;
             }
             case R.id.btn_record_video_mode:{
                 switchCameraMode(SettingsDefinitions.CameraMode.RECORD_VIDEO);
                 break;
-            }
+            }*/
             default:
                 break;
         }
@@ -434,13 +432,13 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
 
 
         Imgproc.findContours(droneImage, contours, new Mat(), Imgproc.RETR_EXTERNAL,Imgproc.CHAIN_APPROX_SIMPLE);
-        Imgproc.drawContours(copy, contours, -1, new Scalar(255,255,0));
+        Imgproc.drawContours(copy, contours, -1, new Scalar(0,255,255),2);
         for(MatOfPoint cnt : contours) {
-            if(Imgproc.contourArea(cnt) > 20) {
+            if(Imgproc.contourArea(cnt) > 15) {
                 double x = Imgproc.boundingRect(cnt).x;
                 double y = Imgproc.boundingRect(cnt).y;
                 Point p = new Point(x,y);
-                Imgproc.circle(copy, p, 30, new Scalar( 0, 0, 255 ));
+                Imgproc.circle(copy, p, 40, new Scalar( 255, 0, 0 ),2);
             }
         }
         Bitmap bmpImageSurface =  Bitmap.createBitmap(copy.cols(),
@@ -460,7 +458,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
             camera.setThermalDDE(-20,null);
             camera.setThermalACE(1,null);
             camera.setThermalSSO(100,null);
-            camera.setContrast(32,null);
+          //  camera.setContrast(32,null);
             camera.setThermalBrightness(8192,null);
             camera.setThermalFFCMode(SettingsDefinitions.ThermalFFCMode.AUTO,null);
         }
