@@ -15,6 +15,8 @@ import android.widget.*;
 import dji.common.camera.SettingsDefinitions;
 import dji.common.camera.SystemState;
 import dji.common.error.DJIError;
+import dji.common.gimbal.Rotation;
+import dji.common.gimbal.RotationMode;
 import dji.common.product.Model;
 import dji.common.useraccount.UserAccountState;
 import dji.common.util.CommonCallbacks;
@@ -43,11 +45,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
 
     protected TextureView mVideoSurface = null;
     protected ImageView mImageSurface;
-   // private Button mCaptureBtn, mShootPhotoModeBtn, mRecordVideoModeBtn;
-    //private ToggleButton mRecordBtn;
     private TextView recordingTime;
-
-    private Boolean scanning = false;
 
 
 
@@ -205,32 +203,14 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
         mImageSurface = (ImageView)findViewById(R.id.image_previewer_surface);
      //   mImageSurface.bringToFront();
         recordingTime = (TextView) findViewById(R.id.timer);
-      /*  mCaptureBtn = (Button) findViewById(R.id.btn_capture);
-        mRecordBtn = (ToggleButton) findViewById(R.id.btn_record);
-        mShootPhotoModeBtn = (Button) findViewById(R.id.btn_shoot_photo_mode);
-        mRecordVideoModeBtn = (Button) findViewById(R.id.btn_record_video_mode);
-*/
+
         if (null != mVideoSurface) {
             mVideoSurface.setSurfaceTextureListener(this);
         }
 
-       /* mCaptureBtn.setOnClickListener(this);
-        mRecordBtn.setOnClickListener(this);
-        mShootPhotoModeBtn.setOnClickListener(this);
-        mRecordVideoModeBtn.setOnClickListener(this);*/
 
         recordingTime.setVisibility(View.INVISIBLE);
 
-      /*  mRecordBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    startRecord();
-                } else {
-                    stopRecord();
-                }
-            }
-        });*/
     }
 
     private void initPreviewer() {
@@ -283,9 +263,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
 
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-        testOpenCV();
-
-
+        trackHeatSignatures();
     }
 
     public void showToast(final String msg) {
@@ -300,120 +278,11 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
     public void onClick(View v) {
 
         switch (v.getId()) {
-            /*case R.id.btn_capture:{
-                captureAction();
-                break;
-            }
-            case R.id.btn_shoot_photo_mode:{
-
-                switchCameraMode(SettingsDefinitions.CameraMode.SHOOT_PHOTO);
-                break;
-            }
-            case R.id.btn_record_video_mode:{
-                switchCameraMode(SettingsDefinitions.CameraMode.RECORD_VIDEO);
-                break;
-            }*/
             default:
                 break;
         }
     }
 
-    private void switchCameraMode(SettingsDefinitions.CameraMode cameraMode){
-
-        Camera camera = FPVDemoApplication.getCameraInstance();
-        if (camera != null) {
-            camera.setMode(cameraMode, new CommonCallbacks.CompletionCallback() {
-                @Override
-                public void onResult(DJIError error) {
-
-                    if (error == null) {
-                        showToast("Switch Camera Mode Succeeded");
-                    } else {
-                        showToast(error.getDescription());
-                    }
-                }
-            });
-        }
-    }
-
-    // Method for taking photo
-    private void captureAction(){
-
-        final Camera camera = FPVDemoApplication.getCameraInstance();
-        if (camera != null) {
-
-            SettingsDefinitions.ShootPhotoMode photoMode = SettingsDefinitions.ShootPhotoMode.SINGLE; // Set the camera capture mode as Single mode
-            camera.setShootPhotoMode(photoMode, new CommonCallbacks.CompletionCallback(){
-                @Override
-                public void onResult(DJIError djiError) {
-                    if (null == djiError) {
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                camera.startShootPhoto(new CommonCallbacks.CompletionCallback() {
-                                    @Override
-                                    public void onResult(DJIError djiError) {
-                                        if (djiError == null) {
-                                            showToast("take photo: success");
-                                        } else {
-                                            showToast(djiError.getDescription());
-                                        }
-                                    }
-                                });
-                            }
-                        }, 2000);
-                    }
-                }
-            });
-        }
-    }
-
-    // Method for starting recording
-    private void startRecord(){
-
-        final Camera camera = FPVDemoApplication.getCameraInstance();
-        if (camera != null) {
-            camera.startRecordVideo(new CommonCallbacks.CompletionCallback(){
-                @Override
-                public void onResult(DJIError djiError)
-                {
-                    if (djiError == null) {
-                        showToast("Record video: success");
-                    }else {
-                        showToast(djiError.getDescription());
-                    }
-                }
-            }); // Execute the startRecordVideo API
-        }
-    }
-
-    // Method for stopping recording
-    private void stopRecord(){
-
-        Camera camera = FPVDemoApplication.getCameraInstance();
-        if (camera != null) {
-            camera.stopRecordVideo(new CommonCallbacks.CompletionCallback(){
-
-                @Override
-                public void onResult(DJIError djiError)
-                {
-                    if(djiError == null) {
-                        showToast("Stop recording: success");
-                    }else {
-                        showToast(djiError.getDescription());
-                    }
-                }
-            }); // Execute the stopRecordVideo API
-        }
-
-    }
-
-    private void testOpenCV(){
-       //  Mat matImage = new Mat();
-        //Utils.bitmapToMat(mVideoSurface.getBitmap(), matImage);
-        //showToast("OpenCV works");
-        trackHeatSignatures();
-    }
 
     private void trackHeatSignatures(){
         Mat droneImage = new Mat();
@@ -424,7 +293,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
         Imgproc.cvtColor(droneImage, droneImage, Imgproc.COLOR_RGB2GRAY);
         Imgproc.GaussianBlur(droneImage, droneImage,new Size(5,5), 3);
 
-        Imgproc.threshold(droneImage,droneImage, 200, 255,Imgproc.THRESH_BINARY);
+        Imgproc.threshold(droneImage,droneImage, 170, 255,Imgproc.THRESH_BINARY);
         //frame2 = houghcircles(frame,frame2);
         //	Imgproc.adaptiveThreshold(frame, frame, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C,Imgproc.THRESH_BINARY_INV,15,20);
 
@@ -434,17 +303,22 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
         Imgproc.findContours(droneImage, contours, new Mat(), Imgproc.RETR_EXTERNAL,Imgproc.CHAIN_APPROX_SIMPLE);
         Imgproc.drawContours(copy, contours, -1, new Scalar(0,255,255),2);
         for(MatOfPoint cnt : contours) {
-            if(Imgproc.contourArea(cnt) > 15) {
+            if(Imgproc.contourArea(cnt) > 10) {
                 double x = Imgproc.boundingRect(cnt).x;
                 double y = Imgproc.boundingRect(cnt).y;
                 Point p = new Point(x,y);
                 Imgproc.circle(copy, p, 40, new Scalar( 255, 0, 0 ),2);
             }
         }
-        Bitmap bmpImageSurface =  Bitmap.createBitmap(copy.cols(),
-                copy.rows(),
+        displayAlteredImage(copy);
+
+    }
+
+    private void displayAlteredImage(Mat img){
+        Bitmap bmpImageSurface =  Bitmap.createBitmap(img.cols(),
+                img.rows(),
                 Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(copy,bmpImageSurface);
+        Utils.matToBitmap(img,bmpImageSurface);
         mImageSurface.setImageBitmap(null);
         mImageSurface.setImageBitmap(bmpImageSurface);
 
@@ -454,16 +328,44 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
         if(camera.isThermalCamera()){
             camera.setThermalPalette(SettingsDefinitions.ThermalPalette.WHITE_HOT,null);
             camera.setThermalIsothermEnabled(false,null);
-            camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.AUTO,null);
+           // camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.AUTO,null);
+            camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.HIGH,null);
             camera.setThermalDDE(-20,null);
             camera.setThermalACE(1,null);
             camera.setThermalSSO(100,null);
-          //  camera.setContrast(32,null);
+            camera.setThermalContrast(32,null);
             camera.setThermalBrightness(8192,null);
-            camera.setThermalFFCMode(SettingsDefinitions.ThermalFFCMode.AUTO,null);
+            camera.setThermalFFCMode(SettingsDefinitions.ThermalFFCMode.MANUAL,null);
+
+            camera.setThermalTemperatureUnit(SettingsDefinitions.TemperatureUnit.CELSIUS,null);
+            camera.setThermalBackgroundTemperature(15,null);
+            camera.setThermalAtmosphericTemperature(15,null);
+
+
+
+
         }
+        calibrateGimbal();
 
 
 
+    }
+
+    private void calibrateGimbal(){
+    //    if (ModuleVerificationUtil.isGimbalModuleAvailable()) {
+            FPVDemoApplication.getProductInstance().getGimbal().
+                    rotate(new Rotation.Builder().pitch(-90)
+                            .mode(RotationMode.ABSOLUTE_ANGLE)
+                            .yaw(Rotation.NO_ROTATION)
+                            .roll(Rotation.NO_ROTATION)
+                            .time(0)
+                            .build(), new CommonCallbacks.CompletionCallback() {
+
+                        @Override
+                        public void onResult(DJIError error) {
+
+                        }
+                    });
+      //  }
     }
 }
