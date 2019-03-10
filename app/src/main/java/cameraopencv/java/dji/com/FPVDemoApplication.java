@@ -53,6 +53,14 @@ public class FPVDemoApplication extends Application{
         return mProduct;
     }
 
+    public static synchronized Aircraft getAircraftInstance() {
+
+        if (!isAircraftConnected()) {
+            return null;
+        }
+        return (Aircraft) getProductInstance();
+    }
+
     public static synchronized Camera getCameraInstance() {
 
         if (getProductInstance() == null) return null;
@@ -67,6 +75,10 @@ public class FPVDemoApplication extends Application{
         }
 
         return camera;
+    }
+
+    public static boolean isAircraftConnected() {
+        return getProductInstance() != null && getProductInstance() instanceof Aircraft;
     }
 
     @Override

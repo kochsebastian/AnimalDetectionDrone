@@ -24,6 +24,7 @@ import dji.sdk.base.BaseProduct;
 import dji.sdk.camera.Camera;
 import dji.sdk.camera.VideoFeeder;
 import dji.sdk.codec.DJICodecManager;
+import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.useraccount.UserAccountManager;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
@@ -285,6 +286,9 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
 
 
     private void trackHeatSignatures(){
+        /*
+        ToDo identify same object
+         */
         Mat droneImage = new Mat();
         Utils.bitmapToMat(mVideoSurface.getBitmap(), droneImage);
         Mat copy = null;
@@ -323,6 +327,46 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
         mImageSurface.setImageBitmap(bmpImageSurface);
 
     }
+
+    private Point calculatePosition(int px_x, int px_y){
+        Point image_size = calculateFrameSize();
+        double droneLongitude = FPVDemoApplication.getAircraftInstance()
+                                                    .getFlightController()
+                                                    .getState()
+                                                    .getAircraftLocation()
+                                                    .getLongitude();
+        double droneLatitude = FPVDemoApplication.getAircraftInstance()
+                                                    .getFlightController()
+                                                    .getState()
+                                                    .getAircraftLocation()
+                                                    .getLatitude();
+
+        double x_scalingfactor = image_size.x/720;
+        double y_scalingfactor = image_size.y/480;
+
+        double dist_y = px_y * y_scalingfactor;
+        double dist_x = px_x * x_scalingfactor;
+
+        double geo_new_latitude  = droneLatitude  + (dist_y / 6371) * (180 / Math.PI);
+        double geo_new_longitude = droneLongitude + (dist_x / 6371) * (180 / Math.PI) / Math.cos((droneLatitude * Math.PI/180));
+
+        return new Point(geo_new_latitude,geo_new_longitude);
+
+    }
+
+    private Point calculateFrameSize(){
+        // calculating by using trigonometry
+        // 2*tan(theta) = d/h
+        double fov_angle_y = 27; // degree
+        double fov_angle_x = 35; // degree
+
+        double droneAltitude = FPVDemoApplication.getAircraftInstance().getFlightController().getState().getAircraftLocation().getAltitude();
+        double dx = 2* Math.tan(fov_angle_x/2) * droneAltitude;
+        double dy = 2* Math.tan(fov_angle_y/2) * droneAltitude;
+        return new Point(dx,dy);
+
+    }
+
 
     private void calibrateCamera(Camera camera){
         if(camera.isThermalCamera()){
