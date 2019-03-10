@@ -1,2 +1,2 @@
 # DroneCameraImageProcessing
-Image processing with OpenCV of DJI Matrice 100 camera footage
+Image processing with OpenCV of camera footage from DJI Matrice 100
