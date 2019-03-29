@@ -78,6 +78,24 @@
                   android:screenOrientation="landscape">
 
         </activity>
+
+
+
+        <activity
+                android:name="cameraopencv.java.dji.com.FieldsActivity"
+                android:label="@string/app_name" />
+
+        <activity
+                android:name="cameraopencv.java.dji.com.MenuActivity"
+                android:label="@string/app_name" />
+
+        <activity
+                android:name="cameraopencv.java.dji.com.UxActivity"
+                android:label="@string/app_name" />
+
+        <activity
+                android:name="cameraopencv.java.dji.com.SelectFieldActivity"
+                android:label="@string/app_name" />
     </application>
 
 </manifest>
