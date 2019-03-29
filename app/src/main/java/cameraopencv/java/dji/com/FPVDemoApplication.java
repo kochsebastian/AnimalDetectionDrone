@@ -17,6 +17,7 @@ import dji.sdk.base.BaseProduct;
 import dji.sdk.camera.Camera;
 import dji.sdk.products.Aircraft;
 import dji.sdk.products.HandHeld;
+import dji.sdk.remotecontroller.RemoteController;
 import dji.sdk.sdkmanager.DJISDKManager;
 
 public class FPVDemoApplication extends Application{
@@ -77,9 +78,11 @@ public class FPVDemoApplication extends Application{
         return camera;
     }
 
+
     public static boolean isAircraftConnected() {
         return getProductInstance() != null && getProductInstance() instanceof Aircraft;
     }
+
 
     @Override
     public void onCreate() {

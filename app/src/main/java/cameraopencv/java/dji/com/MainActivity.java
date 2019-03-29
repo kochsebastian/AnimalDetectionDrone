@@ -3,8 +3,8 @@ package cameraopencv.java.dji.com;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
-import android.os.Bundle;
-import android.os.Handler;
+import android.os.*;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.TextureView;
 import android.view.View;
@@ -15,16 +15,20 @@ import android.widget.*;
 import dji.common.camera.SettingsDefinitions;
 import dji.common.camera.SystemState;
 import dji.common.error.DJIError;
+import dji.common.flightcontroller.FlightControllerState;
 import dji.common.gimbal.Rotation;
 import dji.common.gimbal.RotationMode;
 import dji.common.product.Model;
+import dji.common.remotecontroller.GPSData;
 import dji.common.useraccount.UserAccountState;
 import dji.common.util.CommonCallbacks;
+import dji.midware.data.model.P3.DataCameraTauParamROI;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.camera.Camera;
 import dji.sdk.camera.VideoFeeder;
 import dji.sdk.codec.DJICodecManager;
 import dji.sdk.flightcontroller.FlightController;
+import dji.sdk.remotecontroller.RemoteController;
 import dji.sdk.useraccount.UserAccountManager;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
@@ -33,8 +37,16 @@ import org.opencv.android.Utils;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+
 
 public class MainActivity extends Activity implements SurfaceTextureListener,OnClickListener{
 
@@ -47,10 +59,15 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
     protected TextureView mVideoSurface = null;
     protected ImageView mImageSurface;
     private TextView recordingTime;
+    private boolean isVideoRecording;
 
+    List<Point> locs = new ArrayList<Point>();
 
 
     private Handler handler;
+
+
+    File file ;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -73,6 +90,18 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+        File root = Environment.getExternalStorageDirectory();
+
+        Calendar c = Calendar.getInstance();
+
+
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+        String formattedDate = df.format(c.getTime());
+
+
+
+        file = new File(root, "gpsData" +formattedDate +".csv");
+
         setContentView(R.layout.activity_main);
 
         handler = new Handler();
@@ -104,7 +133,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
                         int seconds = recordTime % 60;
 
                         final String timeString = String.format("%02d:%02d", minutes, seconds);
-                        final boolean isVideoRecording = cameraSystemState.isRecording();
+                        isVideoRecording = cameraSystemState.isRecording();
 
                         MainActivity.this.runOnUiThread(new Runnable() {
 
@@ -284,36 +313,80 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
         }
     }
 
-
+    static int numHeatSignatures = 0;
     private void trackHeatSignatures(){
+        if(isVideoRecording) {
+            showToast("isRecording");
+
+            recordGPSData();
+        }
+    /*
+    NOTES
+    Probability
+    Object found with both filters => prob > 90%
+    Object found with global threshold => prob < 50
+    Object found with Canny => prob > 50%
+     */
         /*
-        ToDo identify same object
+        TODO identify same object
          */
         Mat droneImage = new Mat();
         Utils.bitmapToMat(mVideoSurface.getBitmap(), droneImage);
-        Mat copy = null;
-        copy = droneImage.clone();
-        //Mat histimage = createHist(frame2);
-        Imgproc.cvtColor(droneImage, droneImage, Imgproc.COLOR_RGB2GRAY);
-        Imgproc.GaussianBlur(droneImage, droneImage,new Size(5,5), 3);
+        Mat copy = droneImage.clone();
 
-        Imgproc.threshold(droneImage,droneImage, 170, 255,Imgproc.THRESH_BINARY);
-        //frame2 = houghcircles(frame,frame2);
-        //	Imgproc.adaptiveThreshold(frame, frame, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C,Imgproc.THRESH_BINARY_INV,15,20);
+        Imgproc.cvtColor(droneImage, droneImage, Imgproc.COLOR_RGB2GRAY);
+        Imgproc.GaussianBlur(droneImage, droneImage,new Size(5,5), 0);
+
+
+        MatOfDouble mu = new MatOfDouble();
+        MatOfDouble sig = new MatOfDouble();
+        Core.meanStdDev(droneImage, mu, sig);
+
+
+        double sig1 = mu.get(0, 0)[0]+sig.get(0, 0)[0];
+        double sig2 = mu.get(0, 0)[0]+2*sig.get(0, 0)[0];
+        double sig3 = mu.get(0, 0)[0]+3*sig.get(0, 0)[0];
+
+
+
+        Imgproc.Canny(droneImage, droneImage, sig2, sig3,3);
+
 
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
 
 
         Imgproc.findContours(droneImage, contours, new Mat(), Imgproc.RETR_EXTERNAL,Imgproc.CHAIN_APPROX_SIMPLE);
         Imgproc.drawContours(copy, contours, -1, new Scalar(0,255,255),2);
+
+        int tmpnum = 0;
+        Point p = new Point(-100,-100); // -100: not a real coordinate
         for(MatOfPoint cnt : contours) {
-            if(Imgproc.contourArea(cnt) > 10) {
+            MatOfPoint2f cnt2f = new MatOfPoint2f( cnt.toArray() );
+            if(Imgproc.contourArea(cnt) > 10 || Imgproc.arcLength(cnt2f,false)>20) {
+                // 5 and 10 too small, maybe with more gaussian blur
+                // TODO maybe closed contours have a higher probability to be real
                 double x = Imgproc.boundingRect(cnt).x;
                 double y = Imgproc.boundingRect(cnt).y;
-                Point p = new Point(x,y);
-                Imgproc.circle(copy, p, 40, new Scalar( 255, 0, 0 ),2);
+                if(Math.abs(p.x -  x) > 5 && Math.abs(p.y - y) > 5) {
+                    //  avoid tracking two heat signatures from the same object
+                    tmpnum++;
+                    p.x = x;
+                    p.y = y;
+                    Imgproc.circle(copy, p, 30, new Scalar( 0, 0, 255 ),2);
+                    locs.add(calculatePosition(p.x,p.y));
+                    //6th decimal point is 1/9m => regard every location that is the same till the 6th decimal point as identical
+                }
             }
         }
+        // Number of Heatsignatures
+        if(tmpnum != numHeatSignatures || tmpnum == 0){
+            if(tmpnum > numHeatSignatures){
+              //  vibratePhone();
+            }
+            numHeatSignatures = tmpnum;
+        }
+
+
         displayAlteredImage(copy);
 
     }
@@ -328,30 +401,42 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
 
     }
 
-    private Point calculatePosition(int px_x, int px_y){
+
+    private Point calculatePosition(double px_x, double px_y) {
         Point image_size = calculateFrameSize();
         double droneLongitude = FPVDemoApplication.getAircraftInstance()
-                                                    .getFlightController()
-                                                    .getState()
-                                                    .getAircraftLocation()
-                                                    .getLongitude();
+                .getFlightController()
+                .getState()
+                .getAircraftLocation()
+                .getLongitude();
         double droneLatitude = FPVDemoApplication.getAircraftInstance()
-                                                    .getFlightController()
-                                                    .getState()
-                                                    .getAircraftLocation()
-                                                    .getLatitude();
+                .getFlightController()
+                .getState()
+                .getAircraftLocation()
+                .getLatitude();
+        double droneHeading = FPVDemoApplication.getAircraftInstance()
+                .getFlightController()
+                .getCompass()
+                .getHeading();
+
 
         double x_scalingfactor = image_size.x/720;
         double y_scalingfactor = image_size.y/480;
 
-        double dist_y = px_y * y_scalingfactor;
-        double dist_x = px_x * x_scalingfactor;
+        px_x = px_x - 720/2;
+        px_y = -px_y + 480/2;
+        double dist_x = (px_x * x_scalingfactor);
+        double dist_y = (px_y * y_scalingfactor);
 
-        double geo_new_latitude  = droneLatitude  + (dist_y / 6371) * (180 / Math.PI);
-        double geo_new_longitude = droneLongitude + (dist_x / 6371) * (180 / Math.PI) / Math.cos((droneLatitude * Math.PI/180));
+
+        Point dist_rot = rotateVektors(dist_x,dist_y,droneHeading);
+        dist_y = dist_rot.y;
+        dist_x = dist_rot.x;
+
+        double geo_new_latitude  = droneLatitude  + (dist_y / 6378137) * (180 / Math.PI);
+        double geo_new_longitude = droneLongitude + (dist_x / 6378137) * (180 / Math.PI) / Math.cos((droneLatitude * Math.PI/180));
 
         return new Point(geo_new_latitude,geo_new_longitude);
-
     }
 
     private Point calculateFrameSize(){
@@ -367,23 +452,35 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
 
     }
 
+    private Point rotateVektors(double x, double y, double droneHeading) {
+        Point xy = new Point();
+        droneHeading = Math.toRadians(droneHeading);
+        double x_rot = x * Math.cos(droneHeading) + y * Math.sin(droneHeading);
+        double y_rot = (-x)*Math.sin(droneHeading) + y * Math.cos(droneHeading);
+        xy.x = x_rot;
+        xy.y = y_rot;
+        return xy;
+
+    }
+
 
     private void calibrateCamera(Camera camera){
         if(camera.isThermalCamera()){
             camera.setThermalPalette(SettingsDefinitions.ThermalPalette.WHITE_HOT,null);
             camera.setThermalIsothermEnabled(false,null);
-           // camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.AUTO,null);
-            camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.HIGH,null);
+           camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.HIGH,null);
+          //  camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.HIGH,null);
             camera.setThermalDDE(-20,null);
-            camera.setThermalACE(1,null);
+            camera.setThermalACE(0,null);
             camera.setThermalSSO(100,null);
             camera.setThermalContrast(32,null);
             camera.setThermalBrightness(8192,null);
-            camera.setThermalFFCMode(SettingsDefinitions.ThermalFFCMode.MANUAL,null);
+            camera.setThermalFFCMode(SettingsDefinitions.ThermalFFCMode.AUTO,null);
+            camera.setThermalROI(SettingsDefinitions.ThermalROI.FULL,null);
 
             camera.setThermalTemperatureUnit(SettingsDefinitions.TemperatureUnit.CELSIUS,null);
-            camera.setThermalBackgroundTemperature(15,null);
-            camera.setThermalAtmosphericTemperature(15,null);
+           // camera.setThermalBackgroundTemperature(15,null);
+            //camera.setThermalAtmosphericTemperature(15,null);
 
 
 
@@ -396,20 +493,70 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
     }
 
     private void calibrateGimbal(){
-    //    if (ModuleVerificationUtil.isGimbalModuleAvailable()) {
-            FPVDemoApplication.getProductInstance().getGimbal().
-                    rotate(new Rotation.Builder().pitch(-90)
-                            .mode(RotationMode.ABSOLUTE_ANGLE)
-                            .yaw(Rotation.NO_ROTATION)
-                            .roll(Rotation.NO_ROTATION)
-                            .time(0)
-                            .build(), new CommonCallbacks.CompletionCallback() {
 
-                        @Override
-                        public void onResult(DJIError error) {
+        FPVDemoApplication.getProductInstance().getGimbal().
+                rotate(new Rotation.Builder().pitch(-90)
+                        .mode(RotationMode.ABSOLUTE_ANGLE)
+                        .yaw(Rotation.NO_ROTATION)
+                        .roll(Rotation.NO_ROTATION)
+                        .time(0)
+                        .build(), new CommonCallbacks.CompletionCallback() {
 
-                        }
-                    });
-      //  }
+                    @Override
+                    public void onResult(DJIError error) {
+
+                    }
+                });
+
     }
+
+    private void vibratePhone() {
+        if (Build.VERSION.SDK_INT >= 26) {
+            ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(VibrationEffect.createOneShot(150, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(150);
+        }
+    }
+
+    private void recordGPSData(){
+
+        FileWriter writer;
+        double latitude = FPVDemoApplication.getAircraftInstance()
+                .getFlightController()
+                .getState()
+                .getAircraftLocation()
+                .getLatitude();
+        double longitude = FPVDemoApplication.getAircraftInstance()
+                .getFlightController()
+                .getState()
+                .getAircraftLocation()
+                .getLongitude();
+
+
+        double height = FPVDemoApplication.getAircraftInstance().getFlightController().getState().getAircraftLocation().getAltitude();
+
+        double heading = (double) FPVDemoApplication.getAircraftInstance().getFlightController().getCompass().getHeading();//  getAircraftHeadDirection();//  getCompass().getHeading();
+
+       //
+        try {
+
+                writer = new FileWriter(file,true);
+
+               // writeCsvHeader("a","b",writer);
+                writeCsvData(latitude,longitude,height, heading, writer);
+                writer.flush();
+                writer.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+    }
+
+    private void writeCsvData(double lat, double longi, double height, double heading,FileWriter writer) throws IOException {
+        String line = String.format("%f,%f,%f,%f \n", lat, longi,height, heading);
+        writer.write(line);
+    }
+
 }
