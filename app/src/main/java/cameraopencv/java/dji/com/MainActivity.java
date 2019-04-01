@@ -98,7 +98,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
 
 
 
-        file = new File(root, "gpsData" +formattedDate +".csv");
+       // file = new File(root, "gpsData" +formattedDate +".csv");
 
         setContentView(R.layout.activity_main);
 
@@ -116,6 +116,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
                 }
             }
         };
+
 
         Camera camera = FPVDemoApplication.getCameraInstance();
 
@@ -313,11 +314,16 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
 
     static int numHeatSignatures = 0;
     private void trackHeatSignatures(){
+
+
+
         if(isVideoRecording) {
             showToast("isRecording");
 
-            recordGPSData();
+          //  recordGPSData();
         }
+        Bitmap sourceBitmap = Bitmap.createScaledBitmap(mVideoSurface.getBitmap(),720,480,false);
+      //  showToast("" + sourceBitmap.getWidth()+ "\t" + sourceBitmap.getHeight());
     /*
     NOTES
     Probability
@@ -329,7 +335,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
         TODO identify same object
          */
         Mat droneImage = new Mat();
-        Utils.bitmapToMat(mVideoSurface.getBitmap(), droneImage);
+        Utils.bitmapToMat(sourceBitmap, droneImage);
         Mat copy = droneImage.clone();
 
         Imgproc.cvtColor(droneImage, droneImage, Imgproc.COLOR_RGB2GRAY);
@@ -390,12 +396,14 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
     }
 
     private void displayAlteredImage(Mat img){
+
         Bitmap bmpImageSurface =  Bitmap.createBitmap(img.cols(),
                 img.rows(),
                 Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(img,bmpImageSurface);
+        Bitmap displayBitmap = Bitmap.createScaledBitmap(bmpImageSurface,mVideoSurface.getBitmap().getWidth(),mVideoSurface.getBitmap().getHeight(),false);
         mImageSurface.setImageBitmap(null);
-        mImageSurface.setImageBitmap(bmpImageSurface);
+        mImageSurface.setImageBitmap(displayBitmap);
 
     }
 
