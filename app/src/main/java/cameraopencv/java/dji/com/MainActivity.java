@@ -101,6 +101,8 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
        // file = new File(root, "gpsData" +formattedDate +".csv");
 
         setContentView(R.layout.activity_main);
+    //    TimelineFlightView tfv = new TimelineFlightView(this);
+
 
         handler = new Handler();
 
