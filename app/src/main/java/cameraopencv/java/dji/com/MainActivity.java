@@ -27,8 +27,6 @@ import dji.sdk.base.BaseProduct;
 import dji.sdk.camera.Camera;
 import dji.sdk.camera.VideoFeeder;
 import dji.sdk.codec.DJICodecManager;
-import dji.sdk.flightcontroller.FlightController;
-import dji.sdk.remotecontroller.RemoteController;
 import dji.sdk.useraccount.UserAccountManager;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
