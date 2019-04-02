@@ -7,4 +7,35 @@
     <string name="sdk_version">DJI SDK Version: %1$s</string>
     <string name="title_activity_demo">GSDemoActivity</string>
     <string name="google_app_id">djiapp-1551187651342</string>
+
+    <string name="show_home_point">Show Home Point</string>
+    <string name="dji_account_indicator">DJI Account Login Indicator</string>
+    <string name="unlock_flyzones">Unlock Fly Zones</string>
+    <string name="show_flight_path">Show Flight Path</string>
+    <string name="show_gimbal_yaw">Show Gimbal Yaw</string>
+    <string name="clear_flight_path">Clear Flight Path</string>
+    <string name="replace_icon">Replace Icon</string>
+    <string name="fly_zone">Fly Zone</string>
+    <string name="fly_zone_legend">Fly Zone Legend</string>
+    <string name="new_color">New Color</string>
+    <string name="auto_frame">Auto Frame</string>
+    <string name="home_direction">Home Direction</string>
+
+    <string-array name="iconArray">
+        <item>Aircraft</item>
+        <item>Home</item>
+        <item>Gimbal Yaw</item>
+        <item>Locked Zone</item>
+        <item>Unlocked Zone</item>
+    </string-array>
+    <string-array name="mapTypeArray">
+        <item>Standard</item>
+        <item>Satellite</item>
+        <item>Hybrid</item>
+    </string-array>
+    <string-array name="lineTypeArray">
+        <item>Home Direction</item>
+        <item>Flight Path</item>
+        <item>Fly Zone Border</item>
+    </string-array>
 </resources>
