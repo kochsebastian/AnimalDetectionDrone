@@ -97,6 +97,9 @@
                 android:name="cameraopencv.java.dji.com.SelectFieldActivity"
                 android:label="@string/app_name" />
 
+        <activity
+                android:name="cameraopencv.java.dji.com.TimelineFlightView"
+                android:label="@string/app_name" />
 
     </application>
 

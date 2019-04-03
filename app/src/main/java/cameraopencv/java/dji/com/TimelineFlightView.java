@@ -3,6 +3,7 @@ package cameraopencv.java.dji.com;
 import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -87,8 +88,15 @@ public class TimelineFlightView extends Activity implements OnClickListener,Pres
 
 
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.view_timeline);
+        initUI();
+    }
+
     private void setRunningResultToText(final String s) {
-        post(new Runnable() {
+       /* post(new Runnable() {
             @Override
             public void run() {
                 if (runningInfoTV == null) {
@@ -97,12 +105,12 @@ public class TimelineFlightView extends Activity implements OnClickListener,Pres
                     runningInfoTV.append(s + "\n");
                 }
             }
-        });
+        });*/
     }
 
     private void setTimelinePlanToText(final String s) {
 
-        post(new Runnable() {
+      /*  post(new Runnable() {
             @Override
             public void run() {
                 if (timelineInfoTV == null) {
@@ -110,6 +118,14 @@ public class TimelineFlightView extends Activity implements OnClickListener,Pres
                 } else {
                     timelineInfoTV.append(s + "\n");
                 }
+            }
+        });*/
+
+    }
+    public void showToast(final String msg) {
+        runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(TimelineFlightView.this, msg, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -219,21 +235,13 @@ public class TimelineFlightView extends Activity implements OnClickListener,Pres
         elements.add(gimbalAction);
 
         //Step 3: Go 10 meters from home point
-        setTimelinePlanToText("Step 3: Go 10 meters from home point");
-        elements.add(new GoToAction(new LocationCoordinate2D(homeLatitude, homeLongitude), 10));
+    //    setTimelinePlanToText("Step 3: Go 10 meters from home point");
+      //  elements.add(new GoToAction(new LocationCoordinate2D(homeLatitude, homeLongitude), 10));
 
-        //Step 4: shoot 3 photos with 2 seconds interval between each
-        setTimelinePlanToText("Step 4: shoot 3 photos with 2 seconds interval between each");
-        elements.add(ShootPhotoAction.newShootIntervalPhotoAction(3,2));
 
-        //Step 5: shoot a single photo
-        setTimelinePlanToText("Step 5: shoot a single photo");
-        elements.add(ShootPhotoAction.newShootSinglePhotoAction());
-
-        //Step 6: start recording video
-        setTimelinePlanToText("Step 6: start recording video");
-        elements.add(RecordVideoAction.newStartRecordVideoAction());
-
+        //Step 3: Go 10 meters from home point
+      //  setTimelinePlanToText("Step 3: Go 10 meters from home point");
+       // elements.add(new GoToAction(new LocationCoordinate2D(homeLatitude, homeLongitude), 10));
 
         //Step 7: start a waypoint mission while the aircraft is still recording the video
         setTimelinePlanToText("Step 7: start a waypoint mission while the aircraft is still recording the video");
@@ -241,39 +249,12 @@ public class TimelineFlightView extends Activity implements OnClickListener,Pres
         elements.add(waypointMission);
         addWaypointReachedTrigger(waypointMission);
 
-        //Step 8: stop the recording when the waypoint mission is finished
-        setTimelinePlanToText("Step 8: stop the recording when the waypoint mission is finished");
-        elements.add(RecordVideoAction.newStopRecordVideoAction());
-
-        //Step 9: shoot a single photo
-        setTimelinePlanToText("Step 9: shoot a single photo");
-        elements.add(ShootPhotoAction.newShootSinglePhotoAction());
-
-        //Step 10: start a hotpoint mission
-        setTimelinePlanToText("Step 10: start a hotpoint mission to surround 360 degree");
-        HotpointMission hotpointMission = new HotpointMission();
-        hotpointMission.setHotpoint(new LocationCoordinate2D(homeLatitude, homeLongitude));
-        hotpointMission.setAltitude(10);
-        hotpointMission.setRadius(10);
-        hotpointMission.setAngularVelocity(10);
-        HotpointStartPoint startPoint = HotpointStartPoint.NEAREST;
-        hotpointMission.setStartPoint(startPoint);
-        HotpointHeading heading = HotpointHeading.TOWARDS_HOT_POINT;
-        hotpointMission.setHeading(heading);
-        elements.add(new HotpointAction(hotpointMission, 360));
 
         //Step 11: go back home
         setTimelinePlanToText("Step 11: go back home");
         elements.add(new GoHomeAction());
 
-        //Step 12: restore gimbal attitude
-        //This last action will delay the timeline to finish after land on ground, which will
-        //make sure the AircraftLandedTrigger will be triggered.
-        setTimelinePlanToText("Step 2: set the gimbal pitch -30 angle in 2 seconds");
-        attitude = new Attitude(0, Rotation.NO_ROTATION, Rotation.NO_ROTATION);
-        gimbalAction = new GimbalAttitudeAction(attitude);
-        gimbalAction.setCompletionTime(2);
-        elements.add(gimbalAction);
+
 
         addAircraftLandedTrigger(missionControl);
         addBatteryPowerLevelTrigger(missionControl);
@@ -336,7 +317,7 @@ public class TimelineFlightView extends Activity implements OnClickListener,Pres
                         WaypointMissionGotoWaypointMode.SAFELY)
                 .headingMode(
                         WaypointMissionHeadingMode.AUTO)
-                .repeatTimes(1);;
+                .repeatTimes(1);
         List<Waypoint> waypoints = new LinkedList<>();
 
         Waypoint northPoint = new Waypoint(homeLatitude + 10 * GeneralUtils.ONE_METER_OFFSET, homeLongitude, 10f);
@@ -391,7 +372,7 @@ public class TimelineFlightView extends Activity implements OnClickListener,Pres
 
 
     @Override
-    protected void onAttachedToWindow() {
+    public void onAttachedToWindow() {
         super.onAttachedToWindow();
         BaseProduct product = FPVDemoApplication.getProductInstance();
 
@@ -408,7 +389,7 @@ public class TimelineFlightView extends Activity implements OnClickListener,Pres
     }
 
     @Override
-    protected void onDetachedFromWindow() {
+    public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         if (missionControl != null && missionControl.scheduledCount() > 0) {
             missionControl.unscheduleEverything();
@@ -416,14 +397,14 @@ public class TimelineFlightView extends Activity implements OnClickListener,Pres
         }
     }
 
-    private void initUI(Context context) {
-        setClickable(true);
-        LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Service.LAYOUT_INFLATER_SERVICE);
-        layoutInflater.inflate(R.layout.view_timeline, this, true);
+    private void initUI() {
+       // setClickable(true);
+      //  LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Service.LAYOUT_INFLATER_SERVICE);
+        //layoutInflater.inflate(R.layout.view_timeline, this, true);
 
         timelineInfoTV = (TextView) findViewById(R.id.tv_timeline_info);
         runningInfoTV = (TextView) findViewById(R.id.tv_running_info);
-        getHomeBtn = (Button) findViewById(R.id.btn_get_homepoint);
+        getHomeBtn = (Button) findViewById(R.id.btn_run);
         prepareBtn = (Button) findViewById(R.id.btn_timeline_init);
         startBtn = (Button) findViewById(R.id.btn_timeline_start);
         stopBtn = (Button) findViewById(R.id.btn_timeline_stop);
@@ -443,7 +424,7 @@ public class TimelineFlightView extends Activity implements OnClickListener,Pres
     @Override
     public void onClick(View v) {
 
-        if (v.getId() == R.id.btn_get_homepoint) {
+        if (v.getId() == R.id.btn_run) {
             if (FPVDemoApplication.getProductInstance() instanceof Aircraft && !GeneralUtils.checkGpsCoordinate(
                     homeLatitude,
                     homeLongitude) && flightController != null) {
@@ -454,6 +435,8 @@ public class TimelineFlightView extends Activity implements OnClickListener,Pres
                         homeLongitude = locationCoordinate2D.getLongitude();
                         if (GeneralUtils.checkGpsCoordinate(homeLatitude, homeLongitude)) {
                             setTimelinePlanToText("home point latitude: " + homeLatitude + "\nhome point longitude: " + homeLongitude);
+                            initTimeline();
+                            startTimeline();
                         } else {
                             ToastUtils.setResultToToast("Failed to get home coordinates: Invalid GPS coordinate");
                         }

@@ -13,10 +13,10 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
             <Button
-                    android:id="@+id/btn_get_homepoint"
+                    android:id="@+id/btn_run"
                     android:layout_marginTop="20dp"
                     android:layout_marginLeft="5dp"
-                    android:text="Homepoint"
+                    android:text="Auto"
                     android:layout_alignParentLeft="true"
                     style="@style/common_button" />
             <Button

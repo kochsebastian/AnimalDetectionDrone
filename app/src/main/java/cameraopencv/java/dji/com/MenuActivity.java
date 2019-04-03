@@ -50,7 +50,7 @@ public class MenuActivity extends Activity implements View.OnClickListener {
                 break;
 
             case R.id.statistics:
-                Intent intent3 = new Intent(this, MainActivity.class);
+                Intent intent3 = new Intent(this, TimelineFlightView.class);
                 startActivity(intent3);
                 break;
 
