@@ -3,14 +3,19 @@ package cameraopencv.java.dji.com;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.Button;
 import com.dji.importSDKDemo.model.ApplicationModel;
+import com.dji.mapkit.core.maps.DJIMap;
+import com.dji.mapkit.core.models.DJILatLng;
+import dji.ux.widget.MapWidget;
 
 public class MenuActivity extends Activity implements View.OnClickListener {
 
 
 
+    private MapWidget mapWidget;
     private Button mFields, mFlight, mStatistics;
 
 
@@ -21,11 +26,11 @@ public class MenuActivity extends Activity implements View.OnClickListener {
 
         setContentView(R.layout.activity_menu);
 
-        initUI();
+        initUI(savedInstanceState);
         ApplicationModel.INSTANCE.load();
     }
 
-    private void initUI() {
+    private void initUI(Bundle savedInstanceState) {
         mFields = findViewById(R.id.fields);
         mFlight = findViewById(R.id.flight);
         mStatistics = findViewById(R.id.statistics);
@@ -33,6 +38,20 @@ public class MenuActivity extends Activity implements View.OnClickListener {
         mFields.setOnClickListener(this);
         mFlight.setOnClickListener(this);
         mStatistics.setOnClickListener(this);
+
+        mapWidget = findViewById(R.id.map_widget);
+        mapWidget.initAMap(new MapWidget.OnMapReadyListener() {
+            @Override
+            public void onMapReady(@NonNull DJIMap map) {
+                map.setOnMapClickListener(new DJIMap.OnMapClickListener() {
+                    @Override
+                    public void onMapClick(DJILatLng latLng) {
+                        onClick(mapWidget);
+                    }
+                });
+            }
+        });
+        mapWidget.onCreate(savedInstanceState);
     }
 
 

@@ -8,6 +8,15 @@
     android:orientation="horizontal"
     tools:context=".MainActivity">
 
+    <dji.ux.widget.MapWidget
+            android:id="@+id/map_widget"
+            android:layout_width="150dp"
+            android:layout_height="100dp"
+            android:layout_marginRight="12dp"
+            android:layout_marginBottom="12dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -46,18 +55,5 @@
 
     </LinearLayout>
 
-
-    <LinearLayout
-        android:layout_width="140dp"
-        android:layout_height="200dp"
-        android:background="@color/blue"
-        android:layout_centerVertical="true"
-        android:layout_marginStart="12dp"
-        android:orientation="vertical">
-
-        <dji.ux.widget.MapWidget
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-    </LinearLayout>
 
 </RelativeLayout>

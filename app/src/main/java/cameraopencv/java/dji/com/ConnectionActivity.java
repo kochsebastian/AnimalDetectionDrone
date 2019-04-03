@@ -206,7 +206,7 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
         mTextProduct = (TextView) findViewById(R.id.text_product_info);
         mBtnOpen = (Button) findViewById(R.id.btn_open);
         mBtnOpen.setOnClickListener(this);
-        //mBtnOpen.setEnabled(false);sdfsdfsd
+        mBtnOpen.setEnabled(false);
         mVersionTv = (TextView) findViewById(R.id.textView2);
         mVersionTv.setText(getResources().getString(R.string.sdk_version, DJISDKManager.getInstance().getSDKVersion()));
     }
@@ -251,7 +251,7 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
         switch (v.getId()) {
 
             case R.id.btn_open: {
-                Intent intent = new Intent(this, MapWidgetActivity.class);
+                Intent intent = new Intent(this, MenuActivity.class);
                 startActivity(intent);
                 break;
             }
