@@ -1,5 +1,6 @@
 package cameraopencv.java.dji.com;
 
+import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -61,7 +62,7 @@ import java.util.List;
 /**
  * Class for Timeline MissionControl.
  */
-public class TimelineFlightView extends LinearLayout implements OnClickListener, PresentableView {
+public class TimelineFlightView extends Activity implements OnClickListener,PresentableView {
 
     private MissionControl missionControl;
     private FlightController flightController;
@@ -84,27 +85,14 @@ public class TimelineFlightView extends LinearLayout implements OnClickListener,
     protected double homeLatitude = 181;
     protected double homeLongitude = 181;
 
-    public TimelineFlightView(Context context) {
-        super(context);
-        initUI(context);
-    }
 
-    public TimelineFlightView(Context context, @Nullable AttributeSet attrs) {
-        super(context);
-        initUI(context);
-    }
-
-    public TimelineFlightView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context);
-        initUI(context);
-    }
 
     private void setRunningResultToText(final String s) {
         post(new Runnable() {
             @Override
             public void run() {
                 if (runningInfoTV == null) {
-                    Toast.makeText(getContext(), "textview = null", Toast.LENGTH_SHORT).show();
+                //    Toast.makeText(this.getContext(), "textview = null", Toast.LENGTH_SHORT).show();
                 } else {
                     runningInfoTV.append(s + "\n");
                 }
@@ -118,7 +106,7 @@ public class TimelineFlightView extends LinearLayout implements OnClickListener,
             @Override
             public void run() {
                 if (timelineInfoTV == null) {
-                    Toast.makeText(getContext(), "textview = null", Toast.LENGTH_SHORT).show();
+                  //  Toast.makeText(this.getContext(), "textview = null", Toast.LENGTH_SHORT).show();
                 } else {
                     timelineInfoTV.append(s + "\n");
                 }
