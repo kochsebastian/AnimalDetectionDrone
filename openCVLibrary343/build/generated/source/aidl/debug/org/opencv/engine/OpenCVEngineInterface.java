@@ -1,6 +1,6 @@
 /*
  * This file is auto-generated.  DO NOT MODIFY.
- * Original file: C:\\Users\\fe33\\Documents\\Lernen\\DHBW\\Semester 5\\Studienarbeit\\DroneCameraImageProcessing\\openCVLibrary343\\src\\main\\aidl\\org\\opencv\\engine\\OpenCVEngineInterface.aidl
+ * Original file: /Users/sebastiankoch/Documents/AndroidStudienarbeit/CameraOpenCV/openCVLibrary343/src/main/aidl/org/opencv/engine/OpenCVEngineInterface.aidl
  */
 package org.opencv.engine;
 /**
