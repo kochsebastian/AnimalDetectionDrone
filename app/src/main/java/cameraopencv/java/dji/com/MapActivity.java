@@ -87,6 +87,7 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
         mapFragment.getMapAsync(this);
 
 
+
     }
 
     private void showSettingDialog(){
