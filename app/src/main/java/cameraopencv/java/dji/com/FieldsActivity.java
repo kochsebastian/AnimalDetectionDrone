@@ -2,6 +2,7 @@ package cameraopencv.java.dji.com;
 
 
 import android.app.Activity;
+import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -52,9 +53,9 @@ public class FieldsActivity extends Activity implements View.OnClickListener,
 
         switch(v.getId()) {
             case R.id.add_field:
-                ApplicationModel.INSTANCE.getFields().add(0, new Field("dsfsdfsdfsdfwe", new ArrayList<Location>()));
-                // TODO: open dialog where you can define field and select polygon points
-                recyclerView.getAdapter().notifyItemInserted(0);
+                Intent intent = new Intent(this, AddFieldActivity.class);
+                startActivity(intent);
+                //recyclerView.getAdapter().notifyItemInserted(0);
                 break;
 
             case R.id.fields_back:
@@ -62,6 +63,12 @@ public class FieldsActivity extends Activity implements View.OnClickListener,
                 break;
         }
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        recyclerView.getAdapter().notifyDataSetChanged();
     }
 
     @Override
