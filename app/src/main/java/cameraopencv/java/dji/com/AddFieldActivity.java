@@ -39,6 +39,7 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
     private FlightController mFlightController;
 
     private final Map<Integer, Marker> mMarkers = new ConcurrentHashMap<Integer, Marker>();
+    private Polygon polygon = null;
 
 
     @Override
@@ -143,20 +144,39 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
     }
 
     private void markWaypoint(LatLng point){
-        //Create MarkerOptions object
+        //Create marker
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(point);
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
         Marker marker = gMap.addMarker(markerOptions);
         mMarkers.put(mMarkers.size(), marker);
         undo.setEnabled(true);
+        updatePolygon();
     }
+
     private void removeMarker(int index){
         Marker marker = mMarkers.get(index);
         mMarkers.remove(index);
         marker.remove();
         if (mMarkers.isEmpty()) {
             undo.setEnabled(false);
+        }
+        updatePolygon();
+    }
+
+    private void updatePolygon() {
+        if (polygon != null) {
+            polygon.remove();
+            polygon = null;
+        }
+
+        if (!mMarkers.isEmpty()) {
+            PolygonOptions polygonOptions = new PolygonOptions();
+            for (int i = 0; i < mMarkers.size(); i++) {
+                Marker m = mMarkers.get(i);
+                polygonOptions.add(m.getPosition());
+            }
+            polygon = gMap.addPolygon(polygonOptions);
         }
     }
 
