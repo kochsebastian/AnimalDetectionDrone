@@ -38,4 +38,5 @@
         <item>Flight Path</item>
         <item>Fly Zone Border</item>
     </string-array>
+    <string name="component_listview_timeline_mission_control">Timeline Mission Control</string>
 </resources>
