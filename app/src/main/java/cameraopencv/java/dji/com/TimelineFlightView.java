@@ -19,7 +19,6 @@ import android.widget.Toast;
 
 import cameraopencv.java.dji.com.utils.GeneralUtils;
 import cameraopencv.java.dji.com.utils.ToastUtils;
-import cameraopencv.java.dji.com.view.PresentableView;
 import dji.common.error.DJIError;
 import dji.common.gimbal.Attitude;
 import dji.common.gimbal.Rotation;
@@ -63,7 +62,7 @@ import java.util.List;
 /**
  * Class for Timeline MissionControl.
  */
-public class TimelineFlightView extends Activity implements OnClickListener,PresentableView {
+public class TimelineFlightView extends Activity implements OnClickListener {
 
     private MissionControl missionControl;
     private FlightController flightController;
@@ -96,30 +95,27 @@ public class TimelineFlightView extends Activity implements OnClickListener,Pres
     }
 
     private void setRunningResultToText(final String s) {
-       /* post(new Runnable() {
-            @Override
-            public void run() {
+
                 if (runningInfoTV == null) {
-                //    Toast.makeText(this.getContext(), "textview = null", Toast.LENGTH_SHORT).show();
+                    showToast(s);
                 } else {
                     runningInfoTV.append(s + "\n");
-                }
+
             }
-        });*/
+
+
     }
 
     private void setTimelinePlanToText(final String s) {
 
-      /*  post(new Runnable() {
-            @Override
-            public void run() {
+
                 if (timelineInfoTV == null) {
-                  //  Toast.makeText(this.getContext(), "textview = null", Toast.LENGTH_SHORT).show();
+                  showToast(s);
                 } else {
                     timelineInfoTV.append(s + "\n");
                 }
-            }
-        });*/
+
+
 
     }
     public void showToast(final String msg) {
@@ -227,12 +223,7 @@ public class TimelineFlightView extends Activity implements OnClickListener,Pres
         setTimelinePlanToText("Step 1: takeoff from the ground");
         elements.add(new TakeOffAction());
 
-        //Step 2: reset the gimbal to horizontal angle in 2 seconds.
-        setTimelinePlanToText("Step 2: set the gimbal pitch -30 angle in 2 seconds");
-        Attitude attitude = new Attitude(-30, Rotation.NO_ROTATION, Rotation.NO_ROTATION);
-        GimbalAttitudeAction gimbalAction = new GimbalAttitudeAction(attitude);
-        gimbalAction.setCompletionTime(2);
-        elements.add(gimbalAction);
+
 
         //Step 3: Go 10 meters from home point
     //    setTimelinePlanToText("Step 3: Go 10 meters from home point");
@@ -245,7 +236,7 @@ public class TimelineFlightView extends Activity implements OnClickListener,Pres
 
         //Step 7: start a waypoint mission while the aircraft is still recording the video
         setTimelinePlanToText("Step 7: start a waypoint mission while the aircraft is still recording the video");
-        TimelineElement waypointMission = TimelineMission.elementFromWaypointMission(initTestingWaypointMission());
+        TimelineElement waypointMission = TimelineMission.elementFromWaypointMission(initTestingWaypointMission(new ArrayList<LocationCoordinate2D>()));
         elements.add(waypointMission);
         addWaypointReachedTrigger(waypointMission);
 
@@ -300,7 +291,7 @@ public class TimelineFlightView extends Activity implements OnClickListener,Pres
         preError = error;
     }
 
-    private WaypointMission initTestingWaypointMission() {
+    private WaypointMission initTestingWaypointMission(List<LocationCoordinate2D> coords) {
         if (!GeneralUtils.checkGpsCoordinate(homeLatitude, homeLongitude)) {
             ToastUtils.setResultToToast("No home point!!!");
             return null;
@@ -316,16 +307,20 @@ public class TimelineFlightView extends Activity implements OnClickListener,Pres
                 .gotoFirstWaypointMode(
                         WaypointMissionGotoWaypointMode.SAFELY)
                 .headingMode(
-                        WaypointMissionHeadingMode.AUTO)
+                        WaypointMissionHeadingMode.USING_WAYPOINT_HEADING)
                 .repeatTimes(1);
         List<Waypoint> waypoints = new LinkedList<>();
 
-        Waypoint northPoint = new Waypoint(homeLatitude + 10 * GeneralUtils.ONE_METER_OFFSET, homeLongitude, 10f);
+        for(LocationCoordinate2D loc : coords){
+            waypoints.add(new Waypoint(loc.getLatitude(),loc.getLongitude(),40f));
+        }
+
+       /* Waypoint northPoint = new Waypoint(homeLatitude + 10 * GeneralUtils.ONE_METER_OFFSET, homeLongitude, 10f);
         Waypoint eastPoint =
-                new Waypoint(homeLatitude, homeLongitude + 10 * GeneralUtils.calcLongitudeOffset(homeLatitude), 15f);
+            new Waypoint(homeLatitude, homeLongitude + 10 * GeneralUtils.calcLongitudeOffset(homeLatitude), 15f);
         Waypoint southPoint = new Waypoint(homeLatitude - 10 * GeneralUtils.ONE_METER_OFFSET, homeLongitude, 10f);
         Waypoint westPoint =
-                new Waypoint(homeLatitude, homeLongitude - 10 * GeneralUtils.calcLongitudeOffset(homeLatitude), 15f);
+            new Waypoint(homeLatitude, homeLongitude - 10 * GeneralUtils.calcLongitudeOffset(homeLatitude), 15f);
 
         northPoint.addAction(new WaypointAction(WaypointActionType.GIMBAL_PITCH, -60));
         southPoint.addAction(new WaypointAction(WaypointActionType.ROTATE_AIRCRAFT, 60));
@@ -333,11 +328,12 @@ public class TimelineFlightView extends Activity implements OnClickListener,Pres
         waypoints.add(northPoint);
         waypoints.add(eastPoint);
         waypoints.add(southPoint);
-        waypoints.add(westPoint);
+        waypoints.add(westPoint);*/
 
         waypointMissionBuilder.waypointList(waypoints).waypointCount(waypoints.size());
         return waypointMissionBuilder.build();
     }
+
 
     private void startTimeline() {
         if (MissionControl.getInstance().scheduledCount() > 0) {
@@ -398,27 +394,13 @@ public class TimelineFlightView extends Activity implements OnClickListener,Pres
     }
 
     private void initUI() {
-       // setClickable(true);
-      //  LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Service.LAYOUT_INFLATER_SERVICE);
-        //layoutInflater.inflate(R.layout.view_timeline, this, true);
 
-        timelineInfoTV = (TextView) findViewById(R.id.tv_timeline_info);
-        runningInfoTV = (TextView) findViewById(R.id.tv_running_info);
+
         getHomeBtn = (Button) findViewById(R.id.btn_run);
-        prepareBtn = (Button) findViewById(R.id.btn_timeline_init);
-        startBtn = (Button) findViewById(R.id.btn_timeline_start);
-        stopBtn = (Button) findViewById(R.id.btn_timeline_stop);
-        pauseBtn = (Button) findViewById(R.id.btn_timeline_pause);
-        resumeBtn = (Button) findViewById(R.id.btn_timeline_resume);
-        cleanBtn = (Button) findViewById(R.id.btn_timeline_clean);
+
 
         getHomeBtn.setOnClickListener(this);
-        prepareBtn.setOnClickListener(this);
-        startBtn.setOnClickListener(this);
-        stopBtn.setOnClickListener(this);
-        pauseBtn.setOnClickListener(this);
-        resumeBtn.setOnClickListener(this);
-        cleanBtn.setOnClickListener(this);
+
     }
 
     @Override
@@ -456,40 +438,7 @@ public class TimelineFlightView extends Activity implements OnClickListener,Pres
             return;
         }
 
-        switch (v.getId()) {
-            case R.id.btn_timeline_init:
-                initTimeline();
-                break;
-            case R.id.btn_timeline_start:
-                startTimeline();
-                break;
-            case R.id.btn_timeline_stop:
-                stopTimeline();
-                break;
-            case R.id.btn_timeline_pause:
-                ToastUtils.setResultToToast("Timeline just supports the pause on the pausable elements, such as hotpoint mission, waypoint mission");
-                pauseTimeline();
-                break;
-            case R.id.btn_timeline_resume:
-                ToastUtils.setResultToToast("Timeline just supports the resume on the pausable elements, such as hotpoint mission, waypoint mission");
-                resumeTimeline();
-                break;
-            case R.id.btn_timeline_clean:
-                cleanTimelineDataAndLog();
-                break;
-            default:
-                break;
-        }
     }
 
-    @Override
-    public int getDescription() {
-        return R.string.component_listview_timeline_mission_control;
-    }
 
-    @NonNull
-    @Override
-    public String getHint() {
-        return this.getClass().getSimpleName() + ".java";
-    }
 }

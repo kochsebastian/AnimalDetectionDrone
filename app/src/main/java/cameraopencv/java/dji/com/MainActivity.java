@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.os.*;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.TextureView;
 import android.view.View;
@@ -15,20 +14,15 @@ import android.widget.*;
 import dji.common.camera.SettingsDefinitions;
 import dji.common.camera.SystemState;
 import dji.common.error.DJIError;
-import dji.common.flightcontroller.FlightControllerState;
 import dji.common.gimbal.Rotation;
 import dji.common.gimbal.RotationMode;
 import dji.common.product.Model;
-import dji.common.remotecontroller.GPSData;
 import dji.common.useraccount.UserAccountState;
 import dji.common.util.CommonCallbacks;
-import dji.midware.data.model.P3.DataCameraTauParamROI;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.camera.Camera;
 import dji.sdk.camera.VideoFeeder;
 import dji.sdk.codec.DJICodecManager;
-import dji.sdk.flightcontroller.FlightController;
-import dji.sdk.remotecontroller.RemoteController;
 import dji.sdk.useraccount.UserAccountManager;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
@@ -319,6 +313,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
 
 
 
+
         if(isVideoRecording) {
             showToast("isRecording");
 
@@ -365,6 +360,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
         Imgproc.drawContours(copy, contours, -1, new Scalar(0,255,255),2);
 
         int tmpnum = 0;
+
         Point p = new Point(-100,-100); // -100: not a real coordinate
         for(MatOfPoint cnt : contours) {
             MatOfPoint2f cnt2f = new MatOfPoint2f( cnt.toArray() );
@@ -461,7 +457,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
     }
 
     private Point rotateVektors(double x, double y, double droneHeading) {
-        Point xy = new Point();
+        Point xy = new Point(x,y);
         droneHeading = Math.toRadians(droneHeading);
         double x_rot = x * Math.cos(droneHeading) + y * Math.sin(droneHeading);
         double y_rot = (-x)*Math.sin(droneHeading) + y * Math.cos(droneHeading);
