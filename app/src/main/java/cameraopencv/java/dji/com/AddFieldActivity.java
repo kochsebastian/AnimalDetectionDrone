@@ -1,37 +1,43 @@
 package cameraopencv.java.dji.com;
 
-import android.app.AlertDialog;
-import android.content.*;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.*;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
+import com.dji.importSDKDemo.model.ApplicationModel;
+import com.dji.importSDKDemo.model.Field;
 import com.google.android.gms.maps.*;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.*;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.products.Aircraft;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MapActivity extends FragmentActivity implements View.OnClickListener, GoogleMap.OnMapClickListener, OnMapReadyCallback {
+public class AddFieldActivity extends FragmentActivity implements View.OnClickListener, GoogleMap.OnMapClickListener, OnMapReadyCallback {
 
-    protected static final String TAG = "MapActivity";
+    protected static final String TAG = "AddFieldActivity";
     private GoogleMap gMap;
-    private Button locate, add, clear;
-    private Button config, upload, start, stop;
 
+    private Button undo, finish;
+    private TextView fieldName;
+
+    // actually also show drone location. Maybe someone uses the drone while adding fields.
     private double droneLocationLat = 181, droneLocationLng = 181;
     private Marker droneMarker = null;
     private FlightController mFlightController;
 
-    private boolean isAdd = false;
     private final Map<Integer, Marker> mMarkers = new ConcurrentHashMap<Integer, Marker>();
 
 
@@ -60,27 +66,20 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
     }
 
     private void initUI() {
-        locate = findViewById(R.id.locate);
-        add = findViewById(R.id.add);
-        clear = findViewById(R.id.clear);
-        config = findViewById(R.id.config);
-        upload = findViewById(R.id.upload);
-        start = findViewById(R.id.start);
-        stop = findViewById(R.id.stop);
+        undo = findViewById(R.id.add_field_undo);
+        undo.setEnabled(false);
+        undo.setOnClickListener(this);
 
-        locate.setOnClickListener(this);
-        add.setOnClickListener(this);
-        clear.setOnClickListener(this);
-        config.setOnClickListener(this);
-        upload.setOnClickListener(this);
-        start.setOnClickListener(this);
-        stop.setOnClickListener(this);
+        finish = findViewById(R.id.add_field_finish);
+        finish.setOnClickListener(this);
+
+        fieldName = findViewById(R.id.add_field_fieldname);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_map);
+        setContentView(R.layout.activity_add_field);
 
         //Register BroadcastReceiver
         IntentFilter filter = new IntentFilter();
@@ -99,39 +98,27 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.add:
-                enableDisableAdd();
+            case R.id.add_field_undo:
+                removeMarker(mMarkers.size() - 1);
                 break;
 
-            case R.id.clear:
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        gMap.clear();
-                    }
-                });
+            case R.id.add_field_finish:
+                List<LatLng> polygon = new ArrayList<>();
+                for (Marker marker : mMarkers.values()) {
+                    polygon.add(marker.getPosition());
+                }
+                Field field = new Field(fieldName.getText().toString(), polygon);
+                ApplicationModel.INSTANCE.getFields().add(field);
+
+                finish();
                 break;
-            case R.id.locate:
-                updateDroneLocation();
-                cameraUpdate();
-                break;
-            case R.id.config:
-                break;
+
             default:
                 break;
         }
     }
 
 
-    private void enableDisableAdd(){
-        if (isAdd == false) {
-            isAdd = true;
-            add.setText("Exit");
-        }else{
-            isAdd = false;
-            add.setText("Add");
-        }
-    }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -151,11 +138,7 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
 
     @Override
     public void onMapClick(LatLng point) {
-        if (isAdd == true){
-            markWaypoint(point);
-        }else{
-            setResultToToast("Cannot add waypoint");
-        }
+        markWaypoint(point);
     }
 
     private void markWaypoint(LatLng point){
@@ -165,6 +148,15 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
         Marker marker = gMap.addMarker(markerOptions);
         mMarkers.put(mMarkers.size(), marker);
+        undo.setEnabled(true);
+    }
+    private void removeMarker(int index){
+        Marker marker = mMarkers.get(index);
+        mMarkers.remove(index);
+        marker.remove();
+        if (mMarkers.isEmpty()) {
+            undo.setEnabled(false);
+        }
     }
 
 
@@ -238,10 +230,10 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
 
 
     private void setResultToToast(final String string){
-        MapActivity.this.runOnUiThread(new Runnable() {
+        AddFieldActivity.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(MapActivity.this, string, Toast.LENGTH_SHORT).show();
+                Toast.makeText(AddFieldActivity.this, string, Toast.LENGTH_SHORT).show();
             }
         });
     }

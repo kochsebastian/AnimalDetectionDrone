@@ -20,19 +20,19 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Feld auswählen"
-                android:textAppearance="@style/TextAppearance.AppCompat.Headline" />
+                    android:id="@+id/title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Feld auswählen"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Headline"/>
 
             <Button
-                android:id="@+id/selectfield_back"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Zurück" />
+                    android:id="@+id/selectfield_back"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Zurück"/>
 
         </LinearLayout>
 
