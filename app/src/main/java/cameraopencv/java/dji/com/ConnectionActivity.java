@@ -206,7 +206,7 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
         mTextProduct = (TextView) findViewById(R.id.text_product_info);
         mBtnOpen = (Button) findViewById(R.id.btn_open);
         mBtnOpen.setOnClickListener(this);
-        //mBtnOpen.setEnabled(false);
+        mBtnOpen.setEnabled(true);
         mVersionTv = (TextView) findViewById(R.id.textView2);
         mVersionTv.setText(getResources().getString(R.string.sdk_version, DJISDKManager.getInstance().getSDKVersion()));
     }
@@ -239,7 +239,7 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
         } else {
 
             Log.v(TAG, "refreshSDK: False");
-            mBtnOpen.setEnabled(false);
+      //      mBtnOpen.setEnabled(false);
 
             mTextProduct.setText(R.string.product_information);
             mTextConnectionStatus.setText(R.string.connection_loose);

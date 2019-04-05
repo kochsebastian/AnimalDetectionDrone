@@ -111,6 +111,9 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
                 Field field = new Field(fieldName.getText().toString(), polygon);
                 ApplicationModel.INSTANCE.getFields().add(field);
 
+
+                TimelineFlight tlf = new TimelineFlight();
+                tlf.runTimeLine(polygon);
                 finish();
                 break;
 
