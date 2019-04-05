@@ -104,7 +104,8 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
 
             case R.id.add_field_finish:
                 List<LatLng> polygon = new ArrayList<>();
-                for (Marker marker : mMarkers.values()) {
+                for (int i = 0; i < mMarkers.size(); i++) {
+                    Marker marker = mMarkers.get(i);
                     polygon.add(marker.getPosition());
                 }
                 Field field = new Field(fieldName.getText().toString(), polygon);
