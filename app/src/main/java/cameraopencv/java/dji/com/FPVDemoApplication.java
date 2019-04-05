@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.multidex.MultiDex;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.Toast;
@@ -28,7 +29,7 @@ public class FPVDemoApplication extends Application {
     private static BaseProduct mProduct;
     public Handler mHandler;
 
-    private Application instance;
+    private static Application instance;
 
     public void setContext(Application application) {
         instance = application;
@@ -183,5 +184,17 @@ public class FPVDemoApplication extends Application {
             getApplicationContext().sendBroadcast(intent);
         }
     };
+
+    public static Application getInstance() {
+        return FPVDemoApplication.instance;
+    }
+
+    @Override
+    protected void attachBaseContext(Context paramContext) {
+        super.attachBaseContext(paramContext);
+        MultiDex.install(this);
+        com.secneo.sdk.Helper.install(this);
+        instance = this;
+    }
 
 }
