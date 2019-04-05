@@ -4,7 +4,6 @@ package cameraopencv.java.dji.com.geometrics;
 /**
  * Line is defined by starting point and ending point on 2D dimension.<br>
  *
- * @author Roman Kushnarenko (sromku@gmail.com)
  */
 public class Line {
 

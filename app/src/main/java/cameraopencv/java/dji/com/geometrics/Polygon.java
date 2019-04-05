@@ -7,7 +7,6 @@ import java.util.List;
 /**
  * The 2D polygon. <br>
  *
- * @author Roman Kushnarenko (sromku@gmail.com)
  * @see {@link Builder}
  */
 public class Polygon {
@@ -32,7 +31,6 @@ public class Polygon {
     /**
      * Builder of the polygon
      *
-     * @author Roman Kushnarenko (sromku@gmail.com)
      */
     public static class Builder {
         private List<Point2D> _vertexes = new ArrayList<Point2D>();
@@ -63,6 +61,34 @@ public class Polygon {
             if (_vertexes.size() > 1) {
                 Line Line = new Line(_vertexes.get(_vertexes.size() - 2), point);
                 _sides.add(Line);
+            }
+
+            return this;
+        }
+
+        /**
+         * Add vertex points of the polygon.<br>
+         * It is very important to add the vertexes by order, like you were drawing them one by one.
+         *
+         * @param vertices The vertecies of the polygon
+         * @return The builder
+         */
+        public Builder addVertices(List<Point2D> vertices) {
+            if (_isClosed) {
+                // each hole we start with the new array of vertex points
+                _vertexes = new ArrayList<Point2D>();
+                _isClosed = false;
+            }
+
+            for(Point2D point : vertices) {
+                updateBoundingBox(point);
+                _vertexes.add(point);
+
+                // add line (edge) to the polygon
+                if (_vertexes.size() > 1) {
+                    Line Line = new Line(_vertexes.get(_vertexes.size() - 2), point);
+                    _sides.add(Line);
+                }
             }
 
             return this;
@@ -249,7 +275,6 @@ public class Polygon {
     public double getMaxX(){
         return this._boundingBox.xMax;
     }
-
     public double getMinX(){
         return this._boundingBox.xMin;
     }

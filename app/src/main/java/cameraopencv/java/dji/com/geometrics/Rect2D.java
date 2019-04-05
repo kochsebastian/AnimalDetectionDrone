@@ -18,6 +18,6 @@ public class Rect2D  {
     }
 
     public double centerY(){
-        return (y+(y+width))/2;
+        return (y+(y+height))/2;
     }
 }

@@ -1,9 +1,10 @@
-package cameraopencv.java.dji.com;
+package cameraopencv.java.dji.com.model;
 
 
 import cameraopencv.java.dji.com.geometrics.Polygon;
 import cameraopencv.java.dji.com.geometrics.Point2D;
 import cameraopencv.java.dji.com.geometrics.Rect2D;
+import dji.common.model.LocationCoordinate2D;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,6 +12,7 @@ import java.util.List;
 
 
 public class MakeGrid {
+    final static double THRESHOLD = .000000000001;
     static List<Rect2D> myShapesVert = new ArrayList<Rect2D>();
     static List<Point2D> myCentersVert = new ArrayList<Point2D>();
     static List<Rect2D> myShapesHori = new ArrayList<Rect2D>();
@@ -33,26 +35,22 @@ public class MakeGrid {
 
     }
 
-    public static void main(String[] args) {
-        calculateFrameSize(40);
-        Polygon p = Polygon.Builder()
-                .addVertex(new Point2D(10, 10))
-                .addVertex(new Point2D(700, 20))
-                .addVertex(new Point2D(1000, 400))
-                .addVertex(new Point2D(700, 700))
-                .addVertex(new Point2D(500, 600))
-                .addVertex(new Point2D(500, 600))
-                .addVertex(new Point2D(300, 700))
-                .build();
-
-
+    public static List<Point2D> makeGrid(double altitude, List<LocationCoordinate2D> vertices) {
+        calculateFrameSize(altitude);
+        List<Point2D> vertexPoints = new ArrayList<>();
+        for(LocationCoordinate2D v : vertices){
+            vertexPoints.add(new Point2D(v.getLatitude(),v.getLongitude()));
+        }
+        Polygon p = Polygon.Builder().addVertices(vertexPoints).build();
 
         makeGridItVert(p.getMinX()-100,p.getMinY()-100,p);
         makeGridItHori(p.getMinX()-100,p.getMinY()-100,p);
         List<Rect2D> copyHorizontal = new ArrayList<Rect2D>(myShapesHori);
         List<Rect2D> copyVertical = new ArrayList<Rect2D>(myShapesVert);
-        copyHorizontal = hasFourNeighboursHorizontal(copyHorizontal,myCentersHori);
-        copyVertical = hasFourNeighboursVertical(copyVertical,myCentersVert);
+
+        copyHorizontal = hasTwoNeighboursHorizontal(copyHorizontal,myCentersHori);
+        copyVertical = hasTwoNeighboursVertical(copyVertical,myCentersVert);
+
         if(copyHorizontal.size() <= copyVertical.size()) {
             myShapes = copyHorizontal;
             myCenters = myCentersHori;
@@ -60,8 +58,8 @@ public class MakeGrid {
             myShapes= copyVertical;
             myCenters = myCentersVert;
         }
-        System.out.println(myShapes.size()+ "     "+ copyHorizontal.size() + "     " + copyVertical.size());
-
+        //System.out.println(myShapes.size()+ "     "+ copyHorizontal.size() + "     " + copyVertical.size());
+        return myCenters;
     }
 
 
@@ -168,21 +166,21 @@ public class MakeGrid {
     }
 
 
-    private static List<Rect2D> hasFourNeighboursVertical(List<Rect2D> myShapes,List<Point2D> myCenters) {
+    private static List<Rect2D> hasTwoNeighboursVertical(List<Rect2D> myShapes,List<Point2D> myCenters) {
 
         for(int i = 0; i< myCenters.size();i++) {
             if (i == 0 || i == myCenters.size() - 1)
                 continue;
-            if ((myCenters.get(i).y - imageHeight == myCenters.get(i - 1).y
-                    && myCenters.get(i).x == myCenters.get(i - 1).x)
-                    && (myCenters.get(i).y + imageHeight == myCenters.get(i + 1).y
-                    && myCenters.get(i).x == myCenters.get(i + 1).x)) {
+            if (((Math.abs((myCenters.get(i).y - imageHeight) - myCenters.get(i - 1).y) < THRESHOLD)
+                    && Math.abs((myCenters.get(i).x) - myCenters.get(i - 1).x) < THRESHOLD)
+                    && ((Math.abs((myCenters.get(i).y + imageHeight) - myCenters.get(i + 1).y) < THRESHOLD)
+                    && Math.abs((myCenters.get(i).x) - myCenters.get(i + 1).x) < THRESHOLD)) {
                 myShapes.set(i, null);
             }
-            if ((myCenters.get(i).y + imageHeight == myCenters.get(i - 1).y
-                    && myCenters.get(i).x == myCenters.get(i - 1).x)
-                    && (myCenters.get(i).y - imageHeight == myCenters.get(i + 1).y
-                    && myCenters.get(i).x == myCenters.get(i + 1).x)) {
+            if (((Math.abs((myCenters.get(i).y + imageHeight) - myCenters.get(i - 1).y) < THRESHOLD)
+                    && Math.abs((myCenters.get(i).x) - myCenters.get(i - 1).x) < THRESHOLD)
+                    && ((Math.abs((myCenters.get(i).y - imageHeight) - myCenters.get(i + 1).y) < THRESHOLD)
+                    && Math.abs((myCenters.get(i).x) - myCenters.get(i + 1).x) < THRESHOLD)) {
                 myShapes.set(i, null);
             }
         }
@@ -191,22 +189,20 @@ public class MakeGrid {
         return myShapes;
 
     }
-    private static List<Rect2D> hasFourNeighboursHorizontal(List<Rect2D> myShapes,List<Point2D> myCenters) {
+    private static List<Rect2D> hasTwoNeighboursHorizontal(List<Rect2D> myShapes,List<Point2D> myCenters) {
         for(int i = 0; i< myCenters.size();i++) {
             if(i == 0 || i == myCenters.size()-1)
                 continue;
-            if((myCenters.get(i).x - imageWidth == myCenters.get(i-1).x
-                    && myCenters.get(i).y == myCenters.get(i-1).y)
-                    && (myCenters.get(i).x + imageWidth == myCenters.get(i+1).x
-                    && myCenters.get(i).y == myCenters.get(i+1).y))
-            {
+            if (((Math.abs((myCenters.get(i).x - imageHeight) - myCenters.get(i - 1).x) < THRESHOLD)
+                    && Math.abs((myCenters.get(i).y) - myCenters.get(i - 1).y) < THRESHOLD)
+                    && ((Math.abs((myCenters.get(i).x + imageHeight) - myCenters.get(i + 1).x) < THRESHOLD)
+                    && Math.abs((myCenters.get(i).y) - myCenters.get(i + 1).y) < THRESHOLD)) {
                 myShapes.set(i, null);
             }
-            if((myCenters.get(i).x + imageWidth == myCenters.get(i-1).x
-                    && myCenters.get(i).y == myCenters.get(i-1).y)
-                    && (myCenters.get(i).x - imageWidth == myCenters.get(i+1).x
-                    && myCenters.get(i).y == myCenters.get(i+1).y))
-            {
+            if (((Math.abs((myCenters.get(i).x + imageHeight) - myCenters.get(i - 1).x) < THRESHOLD)
+                    && Math.abs((myCenters.get(i).y) - myCenters.get(i - 1).y) < THRESHOLD)
+                    && ((Math.abs((myCenters.get(i).x - imageHeight) - myCenters.get(i + 1).x) < THRESHOLD)
+                    && Math.abs((myCenters.get(i).y) - myCenters.get(i + 1).y) < THRESHOLD)) {
                 myShapes.set(i, null);
             }
 

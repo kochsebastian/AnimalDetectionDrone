@@ -17,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import cameraopencv.java.dji.com.geometrics.Point2D;
 import cameraopencv.java.dji.com.utils.GeneralUtils;
 import cameraopencv.java.dji.com.utils.ToastUtils;
 import dji.common.error.DJIError;
@@ -235,6 +236,8 @@ public class TimelineFlightView extends Activity implements OnClickListener {
        // elements.add(new GoToAction(new LocationCoordinate2D(homeLatitude, homeLongitude), 10));
 
         //Step 7: start a waypoint mission while the aircraft is still recording the video
+     //   List<Point2D> wayPoints_Points = MakeGrid.makeGrid(40.0, List<LocationCoordinate2D> vertecies);
+       // for()
         setTimelinePlanToText("Step 7: start a waypoint mission while the aircraft is still recording the video");
         TimelineElement waypointMission = TimelineMission.elementFromWaypointMission(initTestingWaypointMission(new ArrayList<LocationCoordinate2D>()));
         elements.add(waypointMission);
@@ -314,21 +317,6 @@ public class TimelineFlightView extends Activity implements OnClickListener {
         for(LocationCoordinate2D loc : coords){
             waypoints.add(new Waypoint(loc.getLatitude(),loc.getLongitude(),40f));
         }
-
-       /* Waypoint northPoint = new Waypoint(homeLatitude + 10 * GeneralUtils.ONE_METER_OFFSET, homeLongitude, 10f);
-        Waypoint eastPoint =
-            new Waypoint(homeLatitude, homeLongitude + 10 * GeneralUtils.calcLongitudeOffset(homeLatitude), 15f);
-        Waypoint southPoint = new Waypoint(homeLatitude - 10 * GeneralUtils.ONE_METER_OFFSET, homeLongitude, 10f);
-        Waypoint westPoint =
-            new Waypoint(homeLatitude, homeLongitude - 10 * GeneralUtils.calcLongitudeOffset(homeLatitude), 15f);
-
-        northPoint.addAction(new WaypointAction(WaypointActionType.GIMBAL_PITCH, -60));
-        southPoint.addAction(new WaypointAction(WaypointActionType.ROTATE_AIRCRAFT, 60));
-
-        waypoints.add(northPoint);
-        waypoints.add(eastPoint);
-        waypoints.add(southPoint);
-        waypoints.add(westPoint);*/
 
         waypointMissionBuilder.waypointList(waypoints).waypointCount(waypoints.size());
         return waypointMissionBuilder.build();
