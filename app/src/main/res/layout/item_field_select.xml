@@ -13,11 +13,11 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/fieldName"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="5"
-            android:text="TextView" />
+                android:id="@+id/fieldName"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="5"
+                android:text="TextView" android:minWidth="@dimen/list_fields_textfield_min_width"/>
 
         <ImageButton
             android:id="@+id/selectfield_select"
