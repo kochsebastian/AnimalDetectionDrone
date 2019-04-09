@@ -40,7 +40,7 @@ public class MenuActivity extends Activity implements View.OnClickListener {
         mStatistics.setOnClickListener(this);
 
         mapWidget = findViewById(R.id.map_widget);
-        mapWidget.initAMap(new MapWidget.OnMapReadyListener() {
+        mapWidget.initGoogleMap(new MapWidget.OnMapReadyListener() {
             @Override
             public void onMapReady(@NonNull DJIMap map) {
                 map.setOnMapClickListener(new DJIMap.OnMapClickListener() {
@@ -69,7 +69,7 @@ public class MenuActivity extends Activity implements View.OnClickListener {
                 break;
 
             case R.id.statistics:
-                Intent intent3 = new Intent(this, AddFieldActivity.class);
+                Intent intent3 = new Intent(this, FlightActivity.class);
                 startActivity(intent3);
                 break;
 

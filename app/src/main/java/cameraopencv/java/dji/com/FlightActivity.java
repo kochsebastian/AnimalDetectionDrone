@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.os.*;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.TextureView;
 import android.view.View;
@@ -11,6 +12,8 @@ import android.view.View.OnClickListener;
 import android.view.TextureView.SurfaceTextureListener;
 import android.widget.*;
 
+import com.dji.mapkit.core.maps.DJIMap;
+import com.dji.mapkit.core.models.DJILatLng;
 import dji.common.camera.SettingsDefinitions;
 import dji.common.camera.SystemState;
 import dji.common.error.DJIError;
@@ -24,6 +27,7 @@ import dji.sdk.camera.Camera;
 import dji.sdk.camera.VideoFeeder;
 import dji.sdk.codec.DJICodecManager;
 import dji.sdk.useraccount.UserAccountManager;
+import dji.ux.widget.MapWidget;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
@@ -40,9 +44,9 @@ import java.util.Calendar;
 import java.util.List;
 
 
-public class MainActivity extends Activity implements SurfaceTextureListener,OnClickListener{
+public class FlightActivity extends Activity implements SurfaceTextureListener,OnClickListener{
 
-    private static final String TAG = MainActivity.class.getName();
+    private static final String TAG = FlightActivity.class.getName();
     protected VideoFeeder.VideoDataListener mReceivedVideoDataListener = null;
 
     // Codec for video live view
@@ -50,8 +54,8 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
 
     protected TextureView mVideoSurface = null;
     protected ImageView mImageSurface;
-    private TextView recordingTime;
     private boolean isVideoRecording;
+    private MapWidget mapWidget;
 
     List<Point> locs = new ArrayList<Point>();
 
@@ -80,27 +84,19 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
-        File root = Environment.getExternalStorageDirectory();
-
-        Calendar c = Calendar.getInstance();
-
-
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-        String formattedDate = df.format(c.getTime());
 
 
 
        // file = new File(root, "gpsData" +formattedDate +".csv");
 
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_flight);
     //    TimelineFlight tfv = new TimelineFlight(this);
 
 
         handler = new Handler();
 
-        initUI();
+        initUI(savedInstanceState);
 
         // The callback for receiving the raw H264 video data for camera live view
         mReceivedVideoDataListener = new VideoFeeder.VideoDataListener() {
@@ -122,32 +118,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
                 @Override
                 public void onUpdate(SystemState cameraSystemState) {
                     if (null != cameraSystemState) {
-
-                        int recordTime = cameraSystemState.getCurrentVideoRecordingTimeInSeconds();
-                        int minutes = (recordTime % 3600) / 60;
-                        int seconds = recordTime % 60;
-
-                        final String timeString = String.format("%02d:%02d", minutes, seconds);
                         isVideoRecording = cameraSystemState.isRecording();
-
-                        MainActivity.this.runOnUiThread(new Runnable() {
-
-                            @Override
-                            public void run() {
-
-                                recordingTime.setText(timeString);
-
-                                /*
-                                 * Update recordingTime TextView visibility and mRecordBtn's check state
-                                 */
-                                if (isVideoRecording){
-                                    recordingTime.setVisibility(View.VISIBLE);
-                                }else
-                                {
-                                    recordingTime.setVisibility(View.INVISIBLE);
-                                }
-                            }
-                        });
                     }
                 }
             });
@@ -222,19 +193,30 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
         super.onDestroy();
     }
 
-    private void initUI() {
+    private void initUI(Bundle savedInstanceState) {
         // init mVideoSurface
-        mVideoSurface = (TextureView)findViewById(R.id.video_previewer_surface);
-        mImageSurface = (ImageView)findViewById(R.id.image_previewer_surface);
+        mVideoSurface = (TextureView)findViewById(R.id.flight_video_previewer_surface);
+        mImageSurface = (ImageView)findViewById(R.id.flight_image_previewer_surface);
      //   mImageSurface.bringToFront();
-        recordingTime = (TextView) findViewById(R.id.timer);
 
         if (null != mVideoSurface) {
             mVideoSurface.setSurfaceTextureListener(this);
         }
 
 
-        recordingTime.setVisibility(View.INVISIBLE);
+        mapWidget = findViewById(R.id.flight_map_widget);
+        mapWidget.initGoogleMap(new MapWidget.OnMapReadyListener() {
+            @Override
+            public void onMapReady(@NonNull DJIMap map) {
+                map.setOnMapClickListener(new DJIMap.OnMapClickListener() {
+                    @Override
+                    public void onMapClick(DJILatLng latLng) {
+                        onClick(mapWidget);
+                    }
+                });
+            }
+        });
+        mapWidget.onCreate(savedInstanceState);
 
     }
 
@@ -294,7 +276,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
     public void showToast(final String msg) {
         runOnUiThread(new Runnable() {
             public void run() {
-                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                Toast.makeText(FlightActivity.this, msg, Toast.LENGTH_SHORT).show();
             }
         });
     }

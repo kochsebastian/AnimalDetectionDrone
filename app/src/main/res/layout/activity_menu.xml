@@ -6,24 +6,28 @@
     android:layout_height="match_parent"
     android:background="@color/background_blue"
     android:orientation="horizontal"
-    tools:context=".MainActivity">
+    tools:context=".FlightActivity">
 
-    <dji.ux.widget.MapWidget
-            android:id="@+id/map_widget"
-            android:layout_width="150dp"
-            android:layout_height="100dp"
-            android:layout_marginRight="12dp"
-            android:layout_marginBottom="12dp"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentBottom="true"/>
+
+
+
+    <dji.ux.widget.FPVWidget
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    <dji.ux.widget.FPVOverlayWidget
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
     <LinearLayout
+            android:id="@+id/menu_controls"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            tools:layout_editor_absoluteX="66dp" android:background="@color/white"
+            tools:layout_editor_absoluteX="66dp"
+            android:background="@color/dark_gray"
             android:padding="@dimen/content_padding">
+
 
         <LinearLayout
                 android:layout_width="match_parent"
@@ -55,6 +59,63 @@
         </LinearLayout>
 
     </LinearLayout>
+
+    <LinearLayout
+            android:id="@+id/signal"
+            android:layout_width="match_parent"
+            android:layout_height="25dp"
+            android:background="@color/dark_gray"
+            android:layout_below="@id/menu_controls"
+            android:orientation="horizontal">
+
+        <dji.ux.widget.PreFlightStatusWidget
+                android:layout_width="238dp"
+                android:layout_height="25dp"/>
+
+        <dji.ux.widget.FlightModeWidget
+                android:layout_width="103dp"
+                android:layout_height="22dp"/>
+
+        <dji.ux.widget.GPSSignalWidget
+                android:layout_width="44dp"
+                android:layout_height="22dp"/>
+
+        <dji.ux.widget.VisionWidget
+                android:layout_width="22dp"
+                android:layout_height="22dp"/>
+
+        <dji.ux.widget.RemoteControlSignalWidget
+                android:layout_width="38dp"
+                android:layout_height="22dp"/>
+
+        <dji.ux.widget.VideoSignalWidget
+                android:layout_width="38dp"
+                android:layout_height="22dp"/>
+
+        <dji.ux.widget.WiFiSignalWidget
+                android:layout_width="22dp"
+                android:layout_height="20dp"/>
+
+        <dji.ux.widget.BatteryWidget
+                android:layout_width="96dp"
+                android:layout_height="22dp"
+                custom:excludeView="singleVoltage"/>
+
+        <dji.ux.widget.ConnectionWidget
+                android:layout_marginTop="3dp"
+                android:layout_width="18dp"
+                android:layout_height="18dp"/>
+    </LinearLayout>
+
+    <dji.ux.widget.MapWidget
+            android:id="@+id/map_widget"
+            android:layout_width="150dp"
+            android:layout_height="100dp"
+            android:layout_marginRight="12dp"
+            android:layout_marginBottom="12dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"/>
+
 
 
 </RelativeLayout>
