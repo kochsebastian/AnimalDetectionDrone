@@ -11,6 +11,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import cameraopencv.java.dji.com.geometrics.Point2D;
+import cameraopencv.java.dji.com.model.PolygonGrid;
+import cameraopencv.java.dji.com.utils.ToastUtils;
 import com.dji.importSDKDemo.model.ApplicationModel;
 import com.dji.importSDKDemo.model.Field;
 import com.google.android.gms.maps.*;
@@ -18,12 +21,17 @@ import com.google.android.gms.maps.model.*;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.flightcontroller.FlightController;
+import dji.sdk.mission.timeline.TimelineElement;
+import dji.sdk.mission.timeline.TimelineMission;
 import dji.sdk.products.Aircraft;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+
+
 
 public class AddFieldActivity extends FragmentActivity implements View.OnClickListener, GoogleMap.OnMapClickListener, OnMapReadyCallback {
 
@@ -75,6 +83,7 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
         finish.setOnClickListener(this);
 
         fieldName = findViewById(R.id.add_field_fieldname);
+
     }
 
     @Override
@@ -112,10 +121,19 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
                 Field field = new Field(fieldName.getText().toString(), polygon);
                 ApplicationModel.INSTANCE.getFields().add(field);
 
-
-                TimelineFlight tlf = new TimelineFlight();
-                tlf.runTimeLine(polygon);
-                finish();
+                PolygonGrid pG = new PolygonGrid();
+                List<Point2D> wayPoints2D = pG.makeGrid(40,polygon);
+                List<LatLng> flightWaypoints = new ArrayList<>();
+                for(Point2D wayPoint2D : wayPoints2D){
+                    markWaypointMarker(new LatLng(wayPoint2D.x,wayPoint2D.y));
+                    flightWaypoints.add(new LatLng(wayPoint2D.x,wayPoint2D.y));
+                }
+                ToastUtils.showToast(""+flightWaypoints.size());
+                TextView title = findViewById(R.id.add_field_title);
+                TextView text = findViewById(R.id.add_field_description);
+                TimelineFlight tlf = new TimelineFlight(this, title, text);
+                tlf.runTimeLine(flightWaypoints);
+              //  finish();
                 break;
 
             default:
@@ -132,9 +150,9 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
             setUpMap();
         }
 
-        LatLng shenzhen = new LatLng(22.5362, 113.9454);
-        gMap.addMarker(new MarkerOptions().position(shenzhen).title("Marker in Shenzhen"));
-        gMap.moveCamera(CameraUpdateFactory.newLatLng(shenzhen));
+     //   LatLng shenzhen = new LatLng(22.5362, 113.9454);
+       // gMap.addMarker(new MarkerOptions().position(shenzhen).title("Marker in Shenzhen"));
+        gMap.moveCamera(CameraUpdateFactory.newLatLng( new LatLng(51.055705, 13.510207)));
     }
 
     private void setUpMap() {
@@ -155,6 +173,17 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
         mMarkers.put(mMarkers.size(), marker);
         undo.setEnabled(true);
         updatePolygon();
+    }
+
+    private void markWaypointMarker(LatLng point){
+        //Create marker
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(point);
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+        Marker marker = gMap.addMarker(markerOptions);
+        mMarkers.put(mMarkers.size(), marker);
+        undo.setEnabled(true);
+      //  updatePolygon();
     }
 
     private void removeMarker(int index){
@@ -228,7 +257,7 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
         //Create MarkerOptions object
         final MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(pos);
-        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.aircraft));
+        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.drone_img));
 
         runOnUiThread(new Runnable() {
             @Override
