@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/background_blue"
     android:orientation="horizontal"
-    tools:context=".MainActivity">
+    tools:context=".FlightActivity">
 
     <!-- Widget to see first person view (FPV) -->
     <dji.ux.widget.FPVWidget

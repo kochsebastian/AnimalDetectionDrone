@@ -20,7 +20,7 @@ import dji.sdk.useraccount.UserAccountManager;
 public class UxActivity extends Activity implements View.OnClickListener{
 
 
-    private static final String TAG = MainActivity.class.getName();
+    private static final String TAG = FlightActivity.class.getName();
     public static final String FLAG_CONNECTION_CHANGE = "uxsdk_demo_connection_change";
     private Handler mHandler;
     private DJISDKManager.SDKManagerCallback mDJISDKManagerCallback;

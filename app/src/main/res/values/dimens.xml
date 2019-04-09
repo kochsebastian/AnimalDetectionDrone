@@ -2,4 +2,5 @@
 <resources>
     <dimen name="map_settings_seperator">15dp</dimen>
     <dimen name="map_settings_item_seperator">5dp</dimen>
+    <dimen name="list_fields_textfield_min_width">300dp</dimen>
 </resources>
