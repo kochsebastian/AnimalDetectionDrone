@@ -131,7 +131,7 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
                 ToastUtils.showToast(""+flightWaypoints.size());
                 TextView title = findViewById(R.id.add_field_title);
                 TextView text = findViewById(R.id.add_field_description);
-                TimelineFlight tlf = new TimelineFlight(this, title, text);
+                TimelineFlightCopy tlf = new TimelineFlightCopy(this, title, text);
                 tlf.runTimeLine(flightWaypoints);
               //  finish();
                 break;
@@ -150,9 +150,8 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
             setUpMap();
         }
 
-     //   LatLng shenzhen = new LatLng(22.5362, 113.9454);
-       // gMap.addMarker(new MarkerOptions().position(shenzhen).title("Marker in Shenzhen"));
-        gMap.moveCamera(CameraUpdateFactory.newLatLng( new LatLng(51.055705, 13.510207)));
+      //  gMap.moveCamera(CameraUpdateFactory.newLatLng( new LatLng(51.055705, 13.510207)));
+        cameraUpdate();
     }
 
     private void setUpMap() {

@@ -8,7 +8,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import cameraopencv.java.dji.com.FPVDemoApplication;
-import cameraopencv.java.dji.com.MainActivity;
 
 /**
  * Created by DJI on 2/28/17.
