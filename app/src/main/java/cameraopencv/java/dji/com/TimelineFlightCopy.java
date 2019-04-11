@@ -170,15 +170,18 @@ public class TimelineFlightCopy {
     }
 
     private void uploadWaypoints(List<TimelineElement> elements){
-        int waypointsNext = Math.min(2, myFlightWaypoints.size()-waypointIndex);
-        if (waypointsNext <= 1) {
-            elements.add(new GoHomeAction());
-            return;
+        int waypointsNext;
+        if(myFlightWaypoints.size()-waypointIndex == 3){
+            waypointsNext = 3;
         }
-
+        else {
+            waypointsNext = Math.min(2, myFlightWaypoints.size() - waypointIndex);
+            if (waypointsNext <= 1) {
+                elements.add(new GoHomeAction());
+                return;
+            }
+        }
         List<LatLng> missionWaypoints = myFlightWaypoints.subList(waypointIndex, waypointIndex + waypointsNext);
-
-
         TimelineElement waypointMission = TimelineMission.elementFromWaypointMission(initTestingWaypointMission(missionWaypoints));
         waypointIndex += waypointsNext;
 
@@ -186,6 +189,7 @@ public class TimelineFlightCopy {
         addWaypointReachedTrigger(waypointMission);
 
     }
+
     private void initTimeline() {
         if (!GeneralUtils.checkGpsCoordinate(homeLatitude, homeLongitude)) {
             ToastUtils.setResultToToast("No home point!!!");
@@ -198,6 +202,7 @@ public class TimelineFlightCopy {
                 updateTimelineStatus(element, event, error);
             }
         };
+        waypointIndex=0;
 
         List<TimelineElement> elements = new ArrayList<>();
 
@@ -206,13 +211,6 @@ public class TimelineFlightCopy {
 
         this.uploadWaypoints(elements);
 
-        //Step 11: go back home
-//        setTimelinePlanToText("Step 11: go back home");
-//        elements.add(new GoHomeAction());
-
-        // ToastUtils.showToast("Elements: "+ elements.size());
-
-
         if (missionControl.scheduledCount() > 0) {
             missionControl.unscheduleEverything();
         }
@@ -220,7 +218,7 @@ public class TimelineFlightCopy {
         missionControl.scheduleElements(elements);
         addAircraftLandedTrigger(missionControl);
         addBatteryPowerLevelTrigger(missionControl);
-;
+
         missionControl.addListener(listener);
     }
 
@@ -377,7 +375,6 @@ public class TimelineFlightCopy {
                     homeLatitude = locationCoordinate2D.getLatitude();
                     homeLongitude = locationCoordinate2D.getLongitude();
                     if (GeneralUtils.checkGpsCoordinate(homeLatitude, homeLongitude)) {
-                   //     TimelineFlightCopy.this.flightWaypoints = flightWaypoints;
                         myFlightWaypoints = flightWaypoints;
                         setTimelinePlanToText("home point latitude: " + homeLatitude + "\nhome point longitude: " + homeLongitude);
                         initTimeline();
