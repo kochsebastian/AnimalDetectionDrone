@@ -39,6 +39,8 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
     private TextView mTextProduct;
     private TextView mVersionTv;
     private Button mBtnOpen;
+    private Button mBtnDebug;
+    private int activateDebug = 0;
     private static final String[] REQUIRED_PERMISSION_LIST = new String[]{
             Manifest.permission.VIBRATE,
             Manifest.permission.INTERNET,
@@ -65,6 +67,7 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
         checkAndRequestPermissions();
         setContentView(R.layout.activity_connection);
 
+        activateDebug = 0;
         initUI();
 
         // Register the broadcast receiver for receiving the device connection's changes.
@@ -178,6 +181,9 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
     @Override
     public void onResume() {
         Log.e(TAG, "onResume");
+        activateDebug = 0;
+        mBtnDebug.setVisibility(View.GONE);
+        mBtnDebug.setActivated(false);
         super.onResume();
     }
 
@@ -209,6 +215,12 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
         mBtnOpen.setEnabled(false);
         mVersionTv = (TextView) findViewById(R.id.textView2);
         mVersionTv.setText(getResources().getString(R.string.sdk_version, DJISDKManager.getInstance().getSDKVersion()));
+        mVersionTv.setOnClickListener(this);
+
+        mBtnDebug = findViewById(R.id.btn_debug);
+        mBtnDebug.setOnClickListener(this);
+        mBtnDebug.setVisibility(View.GONE);
+        mBtnDebug.setActivated(false);
     }
 
     protected BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -254,6 +266,18 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
                 Intent intent = new Intent(this, MenuActivity.class);
                 startActivity(intent);
                 break;
+            }
+            case R.id.btn_debug: {
+                Intent intent= new Intent(this,MenuActivity.class);
+                startActivity(intent);
+                break;
+            }
+            case R.id.textView2:{
+                activateDebug++;
+                if(activateDebug >= 3){
+                    mBtnDebug.setActivated(true);
+                    mBtnDebug.setVisibility(View.VISIBLE);
+                }
             }
             default:
                 break;
