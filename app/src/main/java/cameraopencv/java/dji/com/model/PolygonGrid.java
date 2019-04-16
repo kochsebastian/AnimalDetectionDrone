@@ -4,8 +4,10 @@ package cameraopencv.java.dji.com.model;
 import cameraopencv.java.dji.com.geometrics.Polygon;
 import cameraopencv.java.dji.com.geometrics.Point2D;
 import cameraopencv.java.dji.com.geometrics.Rect2D;
+import cameraopencv.java.dji.com.utils.GeneralUtils;
 import com.google.android.gms.maps.model.LatLng;
 import dji.common.model.LocationCoordinate2D;
+import org.opencv.android.Utils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,6 +59,7 @@ public class PolygonGrid {
         for(LatLng v : vertices){
             vertexPoints.add(new Point2D(v.latitude,v.longitude));
         }
+        p = null;
         p = Polygon.Builder().addVertices(vertexPoints).build();
 
         makeGridItVert(p.getMinX(),p.getMinY(),p);
@@ -264,6 +267,27 @@ public class PolygonGrid {
         imageHeight = copySize;
         return myShapes;
 
+    }
+
+    public double calcDistance(List<Point2D> waypoints ){
+        double distance =0;
+        for(int i = 1; i< waypoints.size()-1;i++){
+            distance += distFrom(waypoints.get(i-1).x,waypoints.get(i-1).y,waypoints.get(i).x,waypoints.get(i).y);
+        }
+        return distance;
+
+    }
+    public double distFrom(double lat1, double lng1, double lat2, double lng2) {
+        double earthRadius = 6371000; //meters
+        double dLat = Math.toRadians(lat2-lat1);
+        double dLng = Math.toRadians(lng2-lng1);
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLng/2) * Math.sin(dLng/2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        double dist = (double) (earthRadius * c);
+
+        return dist;
     }
 
 

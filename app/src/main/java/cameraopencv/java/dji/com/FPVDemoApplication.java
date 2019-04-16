@@ -1,4 +1,5 @@
 package cameraopencv.java.dji.com;
+import android.app.Activity;
 import android.app.Application;
 
 import android.content.Context;
@@ -9,8 +10,10 @@ import android.os.Looper;
 import android.support.multidex.MultiDex;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.model.LatLng;
 import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
 import dji.sdk.base.BaseComponent;
@@ -18,10 +21,11 @@ import dji.sdk.base.BaseProduct;
 import dji.sdk.camera.Camera;
 import dji.sdk.products.Aircraft;
 import dji.sdk.products.HandHeld;
-import dji.sdk.remotecontroller.RemoteController;
 import dji.sdk.sdkmanager.DJISDKManager;
 
-public class FPVDemoApplication extends Application {
+import java.util.List;
+
+public class FPVDemoApplication extends Application  {
 
     public static final String FLAG_CONNECTION_CHANGE = "fpv_tutorial_connection_change";
 
@@ -34,6 +38,8 @@ public class FPVDemoApplication extends Application {
     public void setContext(Application application) {
         instance = application;
     }
+
+    private static TimelineFlight tlf;
 
     @Override
     public Context getApplicationContext() {
@@ -197,4 +203,23 @@ public class FPVDemoApplication extends Application {
         instance = this;
     }
 
+    public static void createTimeline(Activity c, TextView t1, TextView t2){
+        tlf = new TimelineFlight(c,t1,t2);
+    }
+    public static TimelineFlight getTimeline(){
+        return tlf;
+    }
+    public static void startTimeline(List<LatLng> coords){
+        if(tlf!=null)
+            tlf.runTimeLine(coords);
+    }
+    public static void stopTimeline(){
+        if(tlf!=null){
+            tlf.stopTimeline();
+        }
+    }
+    public static void aboartAndHome(){
+        if(tlf!=null)
+            tlf.gotoHome();
+    }
 }

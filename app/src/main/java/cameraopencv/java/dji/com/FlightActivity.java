@@ -38,9 +38,7 @@ import org.opencv.imgproc.Imgproc;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 
@@ -57,6 +55,8 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
     private boolean isVideoRecording;
     private MapWidget mapWidget;
 
+    private Button mAbortButton;
+    private Button mHomeButton;
     List<Point> locs = new ArrayList<Point>();
 
 
@@ -69,15 +69,15 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
         @Override
         public void onManagerConnected(int status) {
             switch (status) {
-                case LoaderCallbackInterface.SUCCESS:
-                {
+                case LoaderCallbackInterface.SUCCESS: {
                     Log.i(TAG, "OpenCV loaded successfully");
-
-                } break;
+                    break;
+                }
                 default:
                 {
                     super.onManagerConnected(status);
-                } break;
+                    break;
+                }
             }
         }
     };
@@ -130,7 +130,7 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
 
     protected void onProductChange() {
         initPreviewer();
-        loginAccount();
+       // loginAccount();
     }
 
     private void loginAccount(){
@@ -198,6 +198,12 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
         mVideoSurface = (TextureView)findViewById(R.id.flight_video_previewer_surface);
         mImageSurface = (ImageView)findViewById(R.id.flight_image_previewer_surface);
      //   mImageSurface.bringToFront();
+
+        mAbortButton = findViewById(R.id.btn_abort_flight);
+        mHomeButton = findViewById(R.id.btn_return_home);
+
+        mAbortButton.setOnClickListener(this);
+        mHomeButton.setOnClickListener(this);
 
         if (null != mVideoSurface) {
             mVideoSurface.setSurfaceTextureListener(this);
@@ -285,6 +291,15 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
     public void onClick(View v) {
 
         switch (v.getId()) {
+            case R.id.btn_abort_flight:
+                showToast("hjgkdhgfkjh");
+                FPVDemoApplication.stopTimeline();
+                break;
+
+            case R.id.btn_return_home:
+                FPVDemoApplication.aboartAndHome();
+                break;
+
             default:
                 break;
         }
@@ -293,7 +308,7 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
     static int numHeatSignatures = 0;
     private void trackHeatSignatures(){
 
-
+      //  showToast("detecting");
 
 
         if(isVideoRecording) {
@@ -451,7 +466,7 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
 
 
     private void calibrateCamera(Camera camera){
-        if(camera.isThermalCamera()){
+       // if(camera.isThermalCamera()){
             camera.setThermalPalette(SettingsDefinitions.ThermalPalette.WHITE_HOT,null);
             camera.setThermalIsothermEnabled(false,null);
            camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.HIGH,null);
@@ -471,7 +486,7 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
 
 
 
-        }
+       // }
         calibrateGimbal();
 
 

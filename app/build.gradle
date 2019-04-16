@@ -73,6 +73,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation project(':openCVLibrary343')
     implementation 'com.android.support:recyclerview-v7:1.0.3'
+    compile 'com.google.maps.android:android-maps-utils:0.5+'
 
 }
 repositories {

@@ -18,6 +18,7 @@ import com.dji.importSDKDemo.model.ApplicationModel;
 import com.dji.importSDKDemo.model.Field;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
+import com.google.maps.android.heatmaps.HeatmapTileProvider;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.flightcontroller.FlightController;
@@ -103,6 +104,7 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
 
         // manually called because when drone is already connected the productChange event will not be triggered anymore
         initFlightController();
+
     }
 
     @Override
@@ -113,26 +115,37 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
                 break;
 
             case R.id.add_field_finish:
+
                 List<LatLng> polygon = new ArrayList<>();
                 for (int i = 0; i < mMarkers.size(); i++) {
                     Marker marker = mMarkers.get(i);
                     polygon.add(marker.getPosition());
                 }
                 Field field = new Field(fieldName.getText().toString(), polygon);
-                ApplicationModel.INSTANCE.getFields().add(field);
+                ApplicationModel.INSTANCE.getFields().add(0,field);
 
                 PolygonGrid pG = new PolygonGrid();
                 List<Point2D> wayPoints2D = pG.makeGrid(40,polygon);
+
                 List<LatLng> flightWaypoints = new ArrayList<>();
                 for(Point2D wayPoint2D : wayPoints2D){
                     markWaypointMarker(new LatLng(wayPoint2D.x,wayPoint2D.y));
                     flightWaypoints.add(new LatLng(wayPoint2D.x,wayPoint2D.y));
                 }
                 ToastUtils.showToast(""+flightWaypoints.size());
+                double distance = pG.calcDistance(wayPoints2D);
+                if(distance >= 12000)
+                    ToastUtils.showToast("Feld wahrscheinlich zu gross!");
+
                 TextView title = findViewById(R.id.add_field_title);
                 TextView text = findViewById(R.id.add_field_description);
-                TimelineFlightCopy tlf = new TimelineFlightCopy(this, title, text);
-                tlf.runTimeLine(flightWaypoints);
+
+
+                  Intent intent = new Intent(this, MapActivity.class);
+                 startActivity(intent);
+              //  Intent intent = new Intent(this, FlightActivity.class);
+               // startActivity(intent);
+
               //  finish();
                 break;
 
@@ -150,8 +163,10 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
             setUpMap();
         }
 
-      //  gMap.moveCamera(CameraUpdateFactory.newLatLng( new LatLng(51.055705, 13.510207)));
-        cameraUpdate();
+
+            cameraUpdate();
+
+
     }
 
     private void setUpMap() {
@@ -275,9 +290,12 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
 
     private void cameraUpdate(){
         LatLng pos = new LatLng(droneLocationLat, droneLocationLng);
-        float zoomlevel = (float) 18.0;
-        CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(pos, zoomlevel);
-        gMap.moveCamera(cu);
+        if(checkGpsCoordinates(droneLocationLat,droneLocationLng)) {
+            float zoomlevel = (float) 18.0;
+            CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(pos, zoomlevel);
+            gMap.moveCamera(cu);
+        }else
+            gMap.moveCamera(CameraUpdateFactory.newLatLng( new LatLng(51.055705, 13.510207)));
     }
 
 
@@ -288,6 +306,77 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
                 Toast.makeText(AddFieldActivity.this, string, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+
+    private void createHeatmapOverlay(){
+
+        List<LatLng> list = new ArrayList<>();
+        list.add(new LatLng(48.781766,9.212176));
+        list.add(new LatLng(48.781788,9.212161));
+        list.add(new LatLng(48.781830,9.212170));
+        list.add(new LatLng(48.781766,9.212176));
+        list.add(new LatLng(48.781788,9.212161));
+        list.add(new LatLng(48.781830,9.212170));
+        list.add(new LatLng(48.781766,9.212176));
+        list.add(new LatLng(48.781789,9.212157));
+        list.add(new LatLng(48.781830,9.212170));
+        list.add(new LatLng(48.781766,9.212176));
+        list.add(new LatLng(48.781789,9.212157));
+        list.add(new LatLng(48.781830,9.212170));
+        list.add(new LatLng(48.781765,9.212182));
+        list.add(new LatLng(48.781788,9.212161));
+        list.add(new LatLng(48.781832,9.212171));
+        list.add(new LatLng(48.781766,9.212177));
+        list.add(new LatLng(48.781788,9.212161));
+        list.add(new LatLng(48.781832,9.212171));
+        list.add(new LatLng(48.781765,9.212182));
+        list.add(new LatLng(48.781788,9.212161));
+        list.add(new LatLng(48.781830,9.212170));
+        list.add(new LatLng(48.781765,9.212182));
+        list.add(new LatLng(48.781788,9.212161));
+        list.add(new LatLng(48.781830,9.212170));
+        list.add(new LatLng(48.781765,9.212182));
+        list.add(new LatLng(48.781785,9.212156));
+        list.add(new LatLng(48.781830,9.212170));
+        list.add(new LatLng(48.781765,9.212182));
+        list.add(new LatLng(48.781785,9.212156));
+        list.add(new LatLng(48.781830,9.212170));
+        list.add(new LatLng(48.781765,9.212182));
+        list.add(new LatLng(48.781785,9.212156));
+        list.add(new LatLng(48.781830,9.212170));
+        list.add(new LatLng(48.781765,9.212183));
+        list.add(new LatLng(48.781785,9.212156));
+        list.add(new LatLng(48.781830,9.212170));
+        list.add(new LatLng(48.781765,9.212183));
+        list.add(new LatLng(48.781785,9.212156));
+        list.add(new LatLng(48.781830,9.212170));
+        list.add(new LatLng(48.781765,9.212183));
+        list.add(new LatLng(48.781785,9.212156));
+        list.add(new LatLng(48.781830,9.212170));
+        list.add(new LatLng(48.781765,9.212183));
+        list.add(new LatLng(48.781783,9.212161));
+        list.add(new LatLng(48.781830,9.212170));
+        list.add(new LatLng(48.781765,9.212183));
+        list.add(new LatLng(48.781785,9.212156));
+        list.add(new LatLng(48.781830,9.212170));
+        list.add(new LatLng(48.781762,9.212180));
+        list.add(new LatLng(48.781785,9.212157));
+        list.add(new LatLng(48.781832,9.212172));
+        list.add(new LatLng(48.781765,9.212183));
+        list.add(new LatLng(48.781785,9.212157));
+        list.add(new LatLng(48.781832,9.212172));
+
+
+
+
+        // Create a heat map tile provider, passing it the latlngs of the police stations.
+        HeatmapTileProvider mProvider = new HeatmapTileProvider.Builder()
+                .data(list)
+                .build();
+        // Add a tile overlay to the map, using the heat map tile provider.
+        TileOverlay mOverlay = gMap.addTileOverlay(new TileOverlayOptions().tileProvider(mProvider));
+
     }
 
 

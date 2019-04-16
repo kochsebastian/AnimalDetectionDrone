@@ -7,20 +7,26 @@ import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.*;
+import cameraopencv.java.dji.com.geometrics.Point2D;
+import cameraopencv.java.dji.com.model.PolygonGrid;
+import com.dji.importSDKDemo.model.ApplicationModel;
+import com.dji.importSDKDemo.model.Field;
 import com.google.android.gms.maps.*;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.*;
+import com.google.android.gms.maps.model.TileOverlayOptions;
+import com.google.maps.android.heatmaps.Gradient;
+import com.google.maps.android.heatmaps.HeatmapTileProvider;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.products.Aircraft;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MapActivity extends FragmentActivity implements View.OnClickListener, GoogleMap.OnMapClickListener, OnMapReadyCallback {
+public class MapActivity extends FragmentActivity implements View.OnClickListener, GoogleMap.OnMapClickListener, OnMapReadyCallback  {
 
     protected static final String TAG = "MapActivity";
     private GoogleMap gMap;
@@ -33,6 +39,7 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
 
     private boolean isAdd = false;
     private final Map<Integer, Marker> mMarkers = new ConcurrentHashMap<Integer, Marker>();
+    private Field field;
 
 
     @Override
@@ -60,21 +67,19 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
     }
 
     private void initUI() {
-        locate = findViewById(R.id.locate);
-        add = findViewById(R.id.add);
-        clear = findViewById(R.id.clear);
-        config = findViewById(R.id.config);
-        upload = findViewById(R.id.upload);
-        start = findViewById(R.id.start);
-        stop = findViewById(R.id.stop);
 
-        locate.setOnClickListener(this);
-        add.setOnClickListener(this);
-        clear.setOnClickListener(this);
-        config.setOnClickListener(this);
-        upload.setOnClickListener(this);
-        start.setOnClickListener(this);
-        stop.setOnClickListener(this);
+    }
+
+    private void initField(List<LatLng> polygon){
+
+        PolygonGrid pG = new PolygonGrid();
+        List<Point2D> wayPoints2D = pG.makeGrid(40,polygon);
+
+        List<LatLng> flightWaypoints = new ArrayList<>();
+        for(Point2D wayPoint2D : wayPoints2D){
+            markWaypointMarker(new LatLng(wayPoint2D.x,wayPoint2D.y));
+            flightWaypoints.add(new LatLng(wayPoint2D.x,wayPoint2D.y));
+        }
     }
 
     @Override
@@ -92,46 +97,20 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        // manually called because when drone is already connected the productChange event will not be triggered anymore
         initFlightController();
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.add:
-                enableDisableAdd();
-                break;
 
-            case R.id.clear:
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        gMap.clear();
-                    }
-                });
-                break;
-            case R.id.locate:
-                updateDroneLocation();
-                cameraUpdate();
-                break;
-            case R.id.config:
-                break;
             default:
                 break;
         }
     }
 
 
-    private void enableDisableAdd(){
-        if (isAdd == false) {
-            isAdd = true;
-            add.setText("Exit");
-        }else{
-            isAdd = false;
-            add.setText("Add");
-        }
-    }
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -139,10 +118,20 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
             gMap = googleMap;
             setUpMap();
         }
+        gMap.moveCamera(CameraUpdateFactory.newLatLng( new LatLng(51.055705, 13.510207)));
+        field = ApplicationModel.INSTANCE.getFields().get(0);
+        PolygonGrid pG = new PolygonGrid();
+        List<Point2D> wayPoints2D = pG.makeGrid(40,field.getPolygon());
 
-        LatLng shenzhen = new LatLng(22.5362, 113.9454);
-        gMap.addMarker(new MarkerOptions().position(shenzhen).title("Marker in Shenzhen"));
-        gMap.moveCamera(CameraUpdateFactory.newLatLng(shenzhen));
+        List<LatLng> flightWaypoints = new ArrayList<>();
+        for(Point2D wayPoint2D : wayPoints2D){
+            markWaypointMarker(new LatLng(wayPoint2D.x,wayPoint2D.y));
+            flightWaypoints.add(new LatLng(wayPoint2D.x,wayPoint2D.y));
+        }
+        cameraUpdate();
+        FPVDemoApplication.createTimeline(this, new TextView(this), new TextView(this));
+        FPVDemoApplication.startTimeline(flightWaypoints);
+
     }
 
     private void setUpMap() {
@@ -165,6 +154,17 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
         Marker marker = gMap.addMarker(markerOptions);
         mMarkers.put(mMarkers.size(), marker);
+    }
+
+    private void markWaypointMarker(LatLng point){
+        //Create marker
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(point);
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+        Marker marker = gMap.addMarker(markerOptions);
+        mMarkers.put(mMarkers.size(), marker);
+
+        //  updatePolygon();
     }
 
 
@@ -212,7 +212,7 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
         //Create MarkerOptions object
         final MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(pos);
-        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.aircraft));
+        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.drone_img));
 
         runOnUiThread(new Runnable() {
             @Override
@@ -231,9 +231,12 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
 
     private void cameraUpdate(){
         LatLng pos = new LatLng(droneLocationLat, droneLocationLng);
-        float zoomlevel = (float) 18.0;
-        CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(pos, zoomlevel);
-        gMap.moveCamera(cu);
+        if(checkGpsCoordinates(droneLocationLat,droneLocationLng)) {
+            float zoomlevel = (float) 18.0;
+            CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(pos, zoomlevel);
+            gMap.moveCamera(cu);
+        }else
+            gMap.moveCamera(CameraUpdateFactory.newLatLng( new LatLng(51.055705, 13.510207)));
     }
 
 
@@ -245,6 +248,7 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
             }
         });
     }
+
 
 
 }
