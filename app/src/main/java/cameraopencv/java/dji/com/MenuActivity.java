@@ -39,7 +39,7 @@ public class MenuActivity extends Activity implements View.OnClickListener {
         mFlight.setOnClickListener(this);
         mStatistics.setOnClickListener(this);
 
-        mapWidget = findViewById(R.id.map_widget);
+       /* mapWidget = findViewById(R.id.map_widget);
         mapWidget.initGoogleMap(new MapWidget.OnMapReadyListener() {
             @Override
             public void onMapReady(@NonNull DJIMap map) {
@@ -51,7 +51,7 @@ public class MenuActivity extends Activity implements View.OnClickListener {
                 });
             }
         });
-        mapWidget.onCreate(savedInstanceState);
+        mapWidget.onCreate(savedInstanceState);*/
     }
 
 
@@ -69,7 +69,7 @@ public class MenuActivity extends Activity implements View.OnClickListener {
                 break;
 
             case R.id.statistics:
-                Intent intent3 = new Intent(this, FlightActivity.class);
+                Intent intent3 = new Intent(this, MapActivity.class);
                 startActivity(intent3);
                 break;
 
