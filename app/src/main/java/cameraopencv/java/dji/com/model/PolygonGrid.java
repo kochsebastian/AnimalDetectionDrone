@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static cameraopencv.java.dji.com.utils.GeneralUtils.ONE_METER_OFFSET;
+import static cameraopencv.java.dji.com.utils.GeneralUtils.calcLongitudeOffset;
+
 
 public class PolygonGrid {
     final  double THRESHOLD = .000000000001;
@@ -27,7 +30,7 @@ public class PolygonGrid {
     private  double imageHeight = 5;
     private Polygon p;
 
-    private void calculateGridSize (double altitude){
+    private void calculateGridSize (double altitude,double latitude){
 
 
         // calculating by using trigonometry
@@ -36,8 +39,8 @@ public class PolygonGrid {
         double fov_angle_x = 35; // degree
 
         double droneAltitude = altitude;
-        imageWidth = 2* Math.tan(Math.toRadians(fov_angle_x/2)) * droneAltitude * 0.00000899322;
-        imageHeight = 2* Math.tan(Math.toRadians(fov_angle_y/2)) * droneAltitude * 0.00000899322;
+        imageWidth = 2* Math.tan(Math.toRadians(fov_angle_x/2)) * droneAltitude *  calcLongitudeOffset(latitude);
+        imageHeight = 2* Math.tan(Math.toRadians(fov_angle_y/2)) * droneAltitude * ONE_METER_OFFSET ;
     }
     
     public boolean isContainedInField(LatLng point) {
@@ -45,7 +48,7 @@ public class PolygonGrid {
         return p.contains(p2D);
     }
 
-    public  List<Point2D> makeGrid(double altitude, List<LatLng> vertices) {
+    public List<Point2D> makeGrid(double altitude, List<LatLng> vertices) {
 
         myShapes.clear();
         myCenters.clear();
@@ -54,7 +57,10 @@ public class PolygonGrid {
         myShapesHori.clear();
         myShapesVert.clear();
 
-        calculateGridSize(altitude);
+        if(!(vertices.size()>=3))
+            throw new IllegalArgumentException();
+        calculateGridSize(altitude,vertices.get(0).latitude);
+
         List<Point2D> vertexPoints = new ArrayList<>();
         for(LatLng v : vertices){
             vertexPoints.add(new Point2D(v.latitude,v.longitude));
@@ -82,6 +88,8 @@ public class PolygonGrid {
        }else
            myShapes = myShapesVert;
 */
+        if(myShapes.size() < 2)
+            throw new NullPointerException();
         List<Point2D> waypoints = new ArrayList<>();
         for(Rect2D wayPoint : myShapes){
             waypoints.add(new Point2D(wayPoint.centerX(),wayPoint.centerY()));

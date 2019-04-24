@@ -41,8 +41,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static cameraopencv.java.dji.com.FPVDemoApplication.aktiv;
 
-public class FlightActivity extends Activity implements SurfaceTextureListener,OnClickListener{
+
+public class FlightActivity extends Activity implements SurfaceTextureListener, OnClickListener {
 
     private static final String TAG = FlightActivity.class.getName();
     protected VideoFeeder.VideoDataListener mReceivedVideoDataListener = null;
@@ -63,7 +65,7 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
     private Handler handler;
 
 
-    File file ;
+    File file;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -73,8 +75,7 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
                     Log.i(TAG, "OpenCV loaded successfully");
                     break;
                 }
-                default:
-                {
+                default: {
                     super.onManagerConnected(status);
                     break;
                 }
@@ -87,11 +88,10 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
         super.onCreate(savedInstanceState);
 
 
-
-       // file = new File(root, "gpsData" +formattedDate +".csv");
+        // file = new File(root, "gpsData" +formattedDate +".csv");
 
         setContentView(R.layout.activity_flight);
-    //    TimelineFlight tfv = new TimelineFlight(this);
+        //    TimelineFlight tfv = new TimelineFlight(this);
 
 
         handler = new Handler();
@@ -130,10 +130,10 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
 
     protected void onProductChange() {
         initPreviewer();
-       // loginAccount();
+        // loginAccount();
     }
 
-    private void loginAccount(){
+    private void loginAccount() {
 
         UserAccountManager.getInstance().logIntoDJIUserAccount(this,
                 new CommonCallbacks.CompletionCallbackWith<UserAccountState>() {
@@ -141,6 +141,7 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
                     public void onSuccess(final UserAccountState userAccountState) {
                         Log.e(TAG, "Login Success");
                     }
+
                     @Override
                     public void onFailure(DJIError error) {
                         showToast("Login Error:"
@@ -163,7 +164,7 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
             Log.d(TAG, "OpenCV library found inside package. Using it!");
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
-        if(mVideoSurface == null) {
+        if (mVideoSurface == null) {
             Log.e(TAG, "mVideoSurface is null");
         }
     }
@@ -181,7 +182,7 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
         super.onStop();
     }
 
-    public void onReturn(View view){
+    public void onReturn(View view) {
         Log.e(TAG, "onReturn");
         this.finish();
     }
@@ -195,9 +196,9 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
 
     private void initUI(Bundle savedInstanceState) {
         // init mVideoSurface
-        mVideoSurface = (TextureView)findViewById(R.id.flight_video_previewer_surface);
-        mImageSurface = (ImageView)findViewById(R.id.flight_image_previewer_surface);
-     //   mImageSurface.bringToFront();
+        mVideoSurface = (TextureView) findViewById(R.id.flight_video_previewer_surface);
+        mImageSurface = (ImageView) findViewById(R.id.flight_image_previewer_surface);
+        //   mImageSurface.bringToFront();
 
         mAbortButton = findViewById(R.id.btn_abort_flight);
         mHomeButton = findViewById(R.id.btn_return_home);
@@ -244,7 +245,7 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
 
     private void uninitPreviewer() {
         Camera camera = FPVDemoApplication.getCameraInstance();
-        if (camera != null){
+        if (camera != null) {
             // Reset the callback
             VideoFeeder.getInstance().getPrimaryVideoFeed().addVideoDataListener(null);
         }
@@ -265,7 +266,7 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        Log.e(TAG,"onSurfaceTextureDestroyed");
+        Log.e(TAG, "onSurfaceTextureDestroyed");
         if (mCodecManager != null) {
             mCodecManager.cleanSurface();
             mCodecManager = null;
@@ -276,7 +277,9 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
 
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-        trackHeatSignatures();
+        if (aktiv) {
+            trackHeatSignatures();
+        }
     }
 
     public void showToast(final String msg) {
@@ -292,8 +295,9 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
 
         switch (v.getId()) {
             case R.id.btn_abort_flight:
-                showToast("hjgkdhgfkjh");
-                FPVDemoApplication.stopTimeline();
+                //  showToast("hjgkdhgfkjh");
+                //FPVDemoApplication.stopTimeline();
+                aktiv = true;
                 break;
 
             case R.id.btn_return_home:
@@ -306,18 +310,19 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
     }
 
     static int numHeatSignatures = 0;
-    private void trackHeatSignatures(){
 
-      //  showToast("detecting");
+    private void trackHeatSignatures() {
+
+        showToast("detecting");
 
 
-        if(isVideoRecording) {
+        if (isVideoRecording) {
             showToast("isRecording");
 
-          //  recordGPSData();
+            //  recordGPSData();
         }
-        Bitmap sourceBitmap = Bitmap.createScaledBitmap(mVideoSurface.getBitmap(),720,480,false);
-      //  showToast("" + sourceBitmap.getWidth()+ "\t" + sourceBitmap.getHeight());
+        Bitmap sourceBitmap = Bitmap.createScaledBitmap(mVideoSurface.getBitmap(), 720, 480, false);
+        //  showToast("" + sourceBitmap.getWidth()+ "\t" + sourceBitmap.getHeight());
     /*
     NOTES
     Probability
@@ -333,7 +338,7 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
         Mat copy = droneImage.clone();
 
         Imgproc.cvtColor(droneImage, droneImage, Imgproc.COLOR_RGB2GRAY);
-        Imgproc.GaussianBlur(droneImage, droneImage,new Size(5,5), 0);
+        Imgproc.GaussianBlur(droneImage, droneImage, new Size(5, 5), 0);
 
 
         MatOfDouble mu = new MatOfDouble();
@@ -341,46 +346,45 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
         Core.meanStdDev(droneImage, mu, sig);
 
 
-        double sig1 = mu.get(0, 0)[0]+sig.get(0, 0)[0];
-        double sig2 = mu.get(0, 0)[0]+2*sig.get(0, 0)[0];
-        double sig3 = mu.get(0, 0)[0]+3*sig.get(0, 0)[0];
+        double sig1 = mu.get(0, 0)[0] + sig.get(0, 0)[0];
+        double sig2 = mu.get(0, 0)[0] + 2 * sig.get(0, 0)[0];
+        double sig3 = mu.get(0, 0)[0] + 3 * sig.get(0, 0)[0];
 
 
-
-        Imgproc.Canny(droneImage, droneImage, sig2, sig3,3);
+        Imgproc.Canny(droneImage, droneImage, sig2, sig3, 3);
 
 
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
 
 
-        Imgproc.findContours(droneImage, contours, new Mat(), Imgproc.RETR_EXTERNAL,Imgproc.CHAIN_APPROX_SIMPLE);
-        Imgproc.drawContours(copy, contours, -1, new Scalar(0,255,255),2);
+        Imgproc.findContours(droneImage, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        Imgproc.drawContours(copy, contours, -1, new Scalar(0, 255, 255), 2);
 
         int tmpnum = 0;
 
-        Point p = new Point(-100,-100); // -100: not a real coordinate
-        for(MatOfPoint cnt : contours) {
-            MatOfPoint2f cnt2f = new MatOfPoint2f( cnt.toArray() );
-            if(Imgproc.contourArea(cnt) > 10 || Imgproc.arcLength(cnt2f,false)>20) {
+        Point p = new Point(-100, -100); // -100: not a real coordinate
+        for (MatOfPoint cnt : contours) {
+            MatOfPoint2f cnt2f = new MatOfPoint2f(cnt.toArray());
+            if (Imgproc.contourArea(cnt) > 10 || Imgproc.arcLength(cnt2f, false) > 20) {
                 // 5 and 10 too small, maybe with more gaussian blur
                 // TODO maybe closed contours have a higher probability to be real
                 double x = Imgproc.boundingRect(cnt).x;
                 double y = Imgproc.boundingRect(cnt).y;
-                if(Math.abs(p.x -  x) > 5 && Math.abs(p.y - y) > 5) {
+                if (Math.abs(p.x - x) > 5 && Math.abs(p.y - y) > 5) {
                     //  avoid tracking two heat signatures from the same object
                     tmpnum++;
                     p.x = x;
                     p.y = y;
-                    Imgproc.circle(copy, p, 30, new Scalar( 0, 0, 255 ),2);
-                    locs.add(calculatePosition(p.x,p.y));
+                    Imgproc.circle(copy, p, 30, new Scalar(0, 0, 255), 2);
+                    locs.add(calculatePosition(p.x, p.y));
                     //6th decimal point is 1/9m => regard every location that is the same till the 6th decimal point as identical
                 }
             }
         }
         // Number of Heatsignatures
-        if(tmpnum != numHeatSignatures || tmpnum == 0){
-            if(tmpnum > numHeatSignatures){
-              //  vibratePhone();
+        if (tmpnum != numHeatSignatures || tmpnum == 0) {
+            if (tmpnum > numHeatSignatures) {
+                //  vibratePhone();
             }
             numHeatSignatures = tmpnum;
         }
@@ -390,13 +394,13 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
 
     }
 
-    private void displayAlteredImage(Mat img){
+    private void displayAlteredImage(Mat img) {
 
-        Bitmap bmpImageSurface =  Bitmap.createBitmap(img.cols(),
+        Bitmap bmpImageSurface = Bitmap.createBitmap(img.cols(),
                 img.rows(),
                 Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(img,bmpImageSurface);
-        Bitmap displayBitmap = Bitmap.createScaledBitmap(bmpImageSurface,mVideoSurface.getBitmap().getWidth(),mVideoSurface.getBitmap().getHeight(),false);
+        Utils.matToBitmap(img, bmpImageSurface);
+        Bitmap displayBitmap = Bitmap.createScaledBitmap(bmpImageSurface, mVideoSurface.getBitmap().getWidth(), mVideoSurface.getBitmap().getHeight(), false);
         mImageSurface.setImageBitmap(null);
         mImageSurface.setImageBitmap(displayBitmap);
 
@@ -421,43 +425,43 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
                 .getHeading();
 
 
-        double x_scalingfactor = image_size.x/720;
-        double y_scalingfactor = image_size.y/480;
+        double x_scalingfactor = image_size.x / 720;
+        double y_scalingfactor = image_size.y / 480;
 
-        px_x = px_x - 720/2;
-        px_y = -px_y + 480/2;
+        px_x = px_x - 720 / 2;
+        px_y = -px_y + 480 / 2;
         double dist_x = (px_x * x_scalingfactor);
         double dist_y = (px_y * y_scalingfactor);
 
 
-        Point dist_rot = rotateVektors(dist_x,dist_y,droneHeading);
+        Point dist_rot = rotateVektors(dist_x, dist_y, droneHeading);
         dist_y = dist_rot.y;
         dist_x = dist_rot.x;
 
-        double geo_new_latitude  = droneLatitude  + (dist_y / 6378137) * (180 / Math.PI);
-        double geo_new_longitude = droneLongitude + (dist_x / 6378137) * (180 / Math.PI) / Math.cos((droneLatitude * Math.PI/180));
+        double geo_new_latitude = droneLatitude + (dist_y / 6378137) * (180 / Math.PI);
+        double geo_new_longitude = droneLongitude + (dist_x / 6378137) * (180 / Math.PI) / Math.cos((droneLatitude * Math.PI / 180));
 
-        return new Point(geo_new_latitude,geo_new_longitude);
+        return new Point(geo_new_latitude, geo_new_longitude);
     }
 
-    private Point calculateFrameSize(){
+    private Point calculateFrameSize() {
         // calculating by using trigonometry
         // 2*tan(theta) = d/h
         double fov_angle_y = 27; // degree
         double fov_angle_x = 35; // degree
 
         double droneAltitude = FPVDemoApplication.getAircraftInstance().getFlightController().getState().getAircraftLocation().getAltitude();
-        double dx = 2* Math.tan(fov_angle_x/2) * droneAltitude;
-        double dy = 2* Math.tan(fov_angle_y/2) * droneAltitude;
-        return new Point(dx,dy);
+        double dx = 2 * Math.tan(fov_angle_x / 2) * droneAltitude;
+        double dy = 2 * Math.tan(fov_angle_y / 2) * droneAltitude;
+        return new Point(dx, dy);
 
     }
 
     private Point rotateVektors(double x, double y, double droneHeading) {
-        Point xy = new Point(x,y);
+        Point xy = new Point(x, y);
         droneHeading = Math.toRadians(droneHeading);
         double x_rot = x * Math.cos(droneHeading) + y * Math.sin(droneHeading);
-        double y_rot = (-x)*Math.sin(droneHeading) + y * Math.cos(droneHeading);
+        double y_rot = (-x) * Math.sin(droneHeading) + y * Math.cos(droneHeading);
         xy.x = x_rot;
         xy.y = y_rot;
         return xy;
@@ -465,35 +469,43 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
     }
 
 
-    private void calibrateCamera(Camera camera){
-       // if(camera.isThermalCamera()){
-            camera.setThermalPalette(SettingsDefinitions.ThermalPalette.WHITE_HOT,null);
-            camera.setThermalIsothermEnabled(false,null);
-           camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.HIGH,null);
-          //  camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.HIGH,null);
-            camera.setThermalDDE(-20,null);
-            camera.setThermalACE(0,null);
-            camera.setThermalSSO(100,null);
-            camera.setThermalContrast(32,null);
-            camera.setThermalBrightness(8192,null);
-            camera.setThermalFFCMode(SettingsDefinitions.ThermalFFCMode.AUTO,null);
-            camera.setThermalROI(SettingsDefinitions.ThermalROI.FULL,null);
+    private void calibrateCamera(Camera camera) {
+        CommonCallbacks.CompletionCallback complete = new CommonCallbacks.CompletionCallback() {
+            @Override
+            public void onResult(DJIError djiError) {
+                if (djiError != null)
+                    showToast(djiError.getDescription());
+                else {
+                    showToast("Calibrated");
+                }
+            }
+        };
+        // if(camera.isThermalCamera()){
+        camera.setThermalScene(SettingsDefinitions.ThermalScene.PROFILE_1, complete);
+        camera.setThermalPalette(SettingsDefinitions.ThermalPalette.WHITE_HOT, complete);
+        camera.setThermalIsothermEnabled(false, complete);
+        camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.HIGH, complete);
 
-            camera.setThermalTemperatureUnit(SettingsDefinitions.TemperatureUnit.CELSIUS,null);
-           // camera.setThermalBackgroundTemperature(15,null);
-            //camera.setThermalAtmosphericTemperature(15,null);
+        camera.setThermalDDE(-20, complete);
+        camera.setThermalACE(0, complete); // set maybe higher/lower
+        camera.setThermalSSO(100, complete);
+        camera.setThermalContrast(32, complete);
+        camera.setThermalBrightness(8192, complete);
+        camera.setThermalFFCMode(SettingsDefinitions.ThermalFFCMode.AUTO, complete);
+        camera.setThermalROI(SettingsDefinitions.ThermalROI.FULL, complete);
+
+             camera.setThermalTemperatureUnit(SettingsDefinitions.TemperatureUnit.CELSIUS, complete);
+        // camera.setThermalBackgroundTemperature(15,null);
+        //camera.setThermalAtmosphericTemperature(15,null);
 
 
-
-
-       // }
+        // }
         calibrateGimbal();
-
 
 
     }
 
-    private void calibrateGimbal(){
+    private void calibrateGimbal() {
 
         FPVDemoApplication.getProductInstance().getGimbal().
                 rotate(new Rotation.Builder().pitch(-90)
@@ -519,7 +531,7 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
         }
     }
 
-    private void recordGPSData(){
+    private void recordGPSData() {
 
         FileWriter writer;
         double latitude = FPVDemoApplication.getAircraftInstance()
@@ -538,25 +550,25 @@ public class FlightActivity extends Activity implements SurfaceTextureListener,O
 
         double heading = (double) FPVDemoApplication.getAircraftInstance().getFlightController().getCompass().getHeading();//  getAircraftHeadDirection();//  getCompass().getHeading();
 
-       //
+        //
         try {
 
-                writer = new FileWriter(file,true);
+            writer = new FileWriter(file, true);
 
-               // writeCsvHeader("a","b",writer);
-                writeCsvData(latitude,longitude,height, heading, writer);
-                writer.flush();
-                writer.close();
+            // writeCsvHeader("a","b",writer);
+            writeCsvData(latitude, longitude, height, heading, writer);
+            writer.flush();
+            writer.close();
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
     }
 
-    private void writeCsvData(double lat, double longi, double height, double heading,FileWriter writer) throws IOException {
-        String line = String.format("%f,%f,%f,%f \n", lat, longi,height, heading);
+    private void writeCsvData(double lat, double longi, double height, double heading, FileWriter writer) throws IOException {
+        String line = String.format("%f,%f,%f,%f \n", lat, longi, height, heading);
         writer.write(line);
     }
 

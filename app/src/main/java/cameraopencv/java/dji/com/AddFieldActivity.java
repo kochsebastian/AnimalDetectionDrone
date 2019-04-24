@@ -121,11 +121,32 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
                     Marker marker = mMarkers.get(i);
                     polygon.add(marker.getPosition());
                 }
-                Field field = new Field(fieldName.getText().toString(), polygon);
-                ApplicationModel.INSTANCE.getFields().add(0,field);
+
 
                 PolygonGrid pG = new PolygonGrid();
-                List<Point2D> wayPoints2D = pG.makeGrid(40,polygon);
+                List<Point2D> wayPoints2D;
+                try {
+                    wayPoints2D = pG.makeGrid(40, polygon);
+                }catch(IllegalArgumentException e){
+                    this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            ToastUtils.showToast("Feld muss drei Punkte haben");
+                        }
+                    });
+                    break;
+                }catch(NullPointerException e){
+                    this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            ToastUtils.showToast("Feld zu klein zum Abfliegen");
+                        }
+                    });
+                    break;
+                }
+
+                Field field = new Field(fieldName.getText().toString(), polygon);
+                ApplicationModel.INSTANCE.getFields().add(0,field);
 
                 List<LatLng> flightWaypoints = new ArrayList<>();
                 for(Point2D wayPoint2D : wayPoints2D){

@@ -57,11 +57,11 @@ public class TimelineFlight {
     private int waypointIndex = 0;
     private boolean startedMission = false;
 
-    private int countedReached =0;
-    private int countLanded =0;
+    private int countedReached = 0;
+    private int countLanded = 0;
     private boolean once = false;
 
-    public TimelineFlight(Activity context, TextView title, TextView text){
+    public TimelineFlight(Activity context, TextView title, TextView text) {
         context_ = context;
         this.text = text;
         this.title = title;
@@ -69,32 +69,32 @@ public class TimelineFlight {
     }
 
     private void setRunningResultToText(final String s) {
-                if (runningInfoTV == null) {
-                    context_.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                      //      Toast.makeText(context_, "RR: "+s, Toast.LENGTH_SHORT).show();
-                        }
-                    });
+        if (runningInfoTV == null) {
+            context_.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    //      Toast.makeText(context_, "RR: "+s, Toast.LENGTH_SHORT).show();
+                }
+            });
 
-                } else {
-                    runningInfoTV.append(s + "\n");
+        } else {
+            runningInfoTV.append(s + "\n");
 
-            }
+        }
 
     }
 
     private void setTimelinePlanToText(final String s) {
-                if (timelineInfoTV == null) {
-                    context_.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                         //   Toast.makeText(context_, "TP: "+s, Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                } else {
-                    timelineInfoTV.append(s + "\n");
+        if (timelineInfoTV == null) {
+            context_.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    //   Toast.makeText(context_, "TP: "+s, Toast.LENGTH_SHORT).show();
                 }
+            });
+        } else {
+            timelineInfoTV.append(s + "\n");
+        }
     }
 
     /**
@@ -128,6 +128,7 @@ public class TimelineFlight {
     /**
      * Demo on AircraftLandedTrigger. Once the aircraft is landed, this trigger action will be called if the timeline is
      * not finished yet.
+     *
      * @param triggerTarget
      */
 
@@ -140,9 +141,9 @@ public class TimelineFlight {
     private Trigger.Listener triggerListener = new Trigger.Listener() {
         @Override
         public void onEvent(Trigger trigger, TriggerEvent event, @Nullable DJIError error) {
-            setRunningResultToText("Trigger " + trigger.getClass().getSimpleName() + " event is " + event.name() + (error==null? " ":error.getDescription()));
+            setRunningResultToText("Trigger " + trigger.getClass().getSimpleName() + " event is " + event.name() + (error == null ? " " : error.getDescription()));
 
-            if(trigger.getClass().equals(new AircraftLandedTrigger().getClass())){
+            if (trigger.getClass().equals(new AircraftLandedTrigger().getClass())) {
 
 
 //                missionControl = MissionControl.getInstance();
@@ -150,8 +151,8 @@ public class TimelineFlight {
 //                missionControl.removeAllListeners();
 //                waypointIndex=0;
             }
-            if(trigger.getClass().equals(new WaypointReachedTrigger().getClass())){
-                if(countedReached==1){
+            if (trigger.getClass().equals(new WaypointReachedTrigger().getClass())) {
+                if (countedReached == 1) {
                     Intent intent = new Intent(context_, FlightActivity.class);
                     context_.startActivity(intent);
                 }
@@ -161,10 +162,11 @@ public class TimelineFlight {
 //                }
                 countedReached++;
                 context_.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                    //    ToastUtils.showToast("Reached");
-                    }}
+                                           @Override
+                                           public void run() {
+                                               //    ToastUtils.showToast("Reached");
+                                           }
+                                       }
                 );
 
             }
@@ -203,14 +205,15 @@ public class TimelineFlight {
         }
     }
 
-    private void uploadWaypoints(List<TimelineElement> elements){
+    private void uploadWaypoints(List<TimelineElement> elements) {
         int waypointsNext;
-        if(myFlightWaypoints.size()-waypointIndex == 3){
+        if (myFlightWaypoints.size() - waypointIndex == 3) {
             waypointsNext = 3;
-        }
-        else {
+        } else {
             waypointsNext = Math.min(2, myFlightWaypoints.size() - waypointIndex);
             if (waypointsNext == 0) {
+                Intent intent = new Intent(context_, MapActivity.class);
+                context_.startActivity(intent);
                 elements.add(new GoHomeAction());
                 return;
             }
@@ -236,7 +239,7 @@ public class TimelineFlight {
                 updateTimelineStatus(element, event, error);
             }
         };
-     //   waypointIndex=0;
+        //   waypointIndex=0;
 
         List<TimelineElement> elements = new ArrayList<>();
 
@@ -264,7 +267,7 @@ public class TimelineFlight {
         }
 
 
-        if(!missionControl.isTimelineRunning() && startedMission){
+        if (!missionControl.isTimelineRunning() && startedMission) {
 
             List<TimelineElement> elements = new ArrayList<>();
             this.uploadWaypoints(elements);
@@ -288,8 +291,8 @@ public class TimelineFlight {
 //            }}
 //            );
 
-        if(error != null){
-            if(error.getClass().equals(DJIError.COMMON_TIMEOUT)){
+        if (error != null) {
+            if (error.getClass().equals(DJIError.COMMON_TIMEOUT)) {
                 ToastUtils.showToast("found way");
             }
         }
@@ -344,16 +347,14 @@ public class TimelineFlight {
                 .repeatTimes(1);
 
         List<Waypoint> waypoints = new ArrayList<>();
-        for(LatLng wayPoint : coords){
-            waypoints.add(new Waypoint(wayPoint.latitude,wayPoint.longitude,40));
+        for (LatLng wayPoint : coords) {
+            waypoints.add(new Waypoint(wayPoint.latitude, wayPoint.longitude, 40));
         }
-       // waypointMissionBuilder.calculateTotalDistance();
+        // waypointMissionBuilder.calculateTotalDistance();
         //waypointMissionBuilder.getLastCalculatedTotalTime();
         waypointMissionBuilder.waypointList(waypoints).waypointCount(waypoints.size());
         return waypointMissionBuilder.build();
     }
-
-
 
 
     private void startTimeline() {
@@ -377,15 +378,19 @@ public class TimelineFlight {
         missionControl.removeAllListeners();
     }
 
-    public void gotoHome(){
+    public void gotoHome() {
 //        missionControl = MissionControl.getInstance();
 //        cleanTimelineDataAndLog();
+        Intent intent = new Intent(context_, MapActivity.class);
+        context_.startActivity(intent);
         missionControl = MissionControl.getInstance();
-        missionControl.unscheduleEverything();;
+        missionControl.unscheduleEverything();
+        ;
         missionControl.removeAllListeners();
         missionControl.scheduleElement(new GoHomeAction());
         missionControl.startTimeline();
     }
+
     private void pauseTimeline() {
         MissionControl.getInstance().pauseTimeline();
     }
@@ -406,8 +411,7 @@ public class TimelineFlight {
     }
 
 
-
-    public void runTimeLine(final List<LatLng> flightWaypoints){
+    public void runTimeLine(final List<LatLng> flightWaypoints) {
 
         BaseProduct product = FPVDemoApplication.getProductInstance();
 
@@ -433,7 +437,7 @@ public class TimelineFlight {
                         myFlightWaypoints = flightWaypoints;
                         setTimelinePlanToText("home point latitude: " + homeLatitude + "\nhome point longitude: " + homeLongitude);
                         waypointIndex = 0;
-                     //   startedMission = false;
+                        //   startedMission = false;
                         initTimeline();
                         startTimeline();
                     } else {

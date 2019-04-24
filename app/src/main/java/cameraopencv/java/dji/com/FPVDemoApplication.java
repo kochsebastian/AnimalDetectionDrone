@@ -41,6 +41,7 @@ public class FPVDemoApplication extends Application  {
 
     private static TimelineFlight tlf;
 
+    public static boolean aktiv = false;
     @Override
     public Context getApplicationContext() {
         return instance;
