@@ -2,6 +2,7 @@ package cameraopencv.java.dji.com;
 
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -55,13 +56,17 @@ public class SelectFieldActivity extends Activity implements View.OnClickListene
     public void recyclerViewListClicked(@NotNull View v, int position) {
         Field f = ApplicationModel.fields.get(position);
         System.out.println("Selected field " + f.getName());
-        finish();
-
-        Intent intent = new Intent(this, MapActivity.class);
-        startActivity(intent);
+        //finish();
 
         TimelineFlight tlf = new TimelineFlight(this); // Hinweis: Nicht sicher, ob als Kontext diese Aktiitaet uebergeben werden kann, oder ob es MapActivity.this sein muss
         tlf.runTimeLine(f.getPolygon());
+        ApplicationModel.fields.remove(f);
+        ApplicationModel.fields.add(0,f);
+        Intent intent = new Intent(this, MapActivity.class);
+        startActivity(intent);
+
+
+
     }
 
     @Override
