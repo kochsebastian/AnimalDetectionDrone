@@ -105,6 +105,7 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
         // manually called because when drone is already connected the productChange event will not be triggered anymore
         initFlightController();
 
+
     }
 
     @Override
@@ -162,12 +163,12 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
                 TextView text = findViewById(R.id.add_field_description);
 
 
-                  Intent intent = new Intent(this, MapActivity.class);
-                 startActivity(intent);
+                //  Intent intent = new Intent(this, MapActivity.class);
+                 //startActivity(intent);
               //  Intent intent = new Intent(this, FlightActivity.class);
                // startActivity(intent);
 
-              //  finish();
+                finish();
                 break;
 
             default:
@@ -186,6 +187,7 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
 
 
             cameraUpdate();
+        createHeatmapOverlay();
 
 
     }

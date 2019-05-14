@@ -12,6 +12,7 @@ import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import cameraopencv.java.dji.com.geometrics.PointWeight;
 import dji.common.camera.SettingsDefinitions;
 import dji.common.camera.SystemState;
 import dji.common.error.DJIError;
@@ -54,7 +55,7 @@ public class ManualFlightActivity extends Activity implements SurfaceTextureList
     private TextView recordingTime;
     private boolean isVideoRecording;
 
-    List<Point> locs = new ArrayList<Point>();
+    List<PointWeight> locs = new ArrayList<>();
 
 
     private Handler handler;
@@ -289,7 +290,9 @@ public class ManualFlightActivity extends Activity implements SurfaceTextureList
 
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-        trackHeatSignatures();
+        boolean tracking = true;
+        if(tracking)
+            trackHeatSignatures();
     }
 
     public void showToast(final String msg) {
@@ -309,11 +312,23 @@ public class ManualFlightActivity extends Activity implements SurfaceTextureList
         }
     }
 
+    private static boolean test4Error(Mat frame) {
+        double testAgainst = frame.get(31+10, 679+10)[0];
+        List<Mat> channels = new ArrayList<Mat>();
+        Core.split(frame, channels);
+        for(int row =31+3;row<52-3;row++) {
+            for(int col =679+5;col<703-5;col++) {
+                if(!(channels.get(2).get(row, col)[0]<channels.get(0).get(row, col)[0]*0.5)) {
+                    //if(!(frame.get(row, col)[0]>testAgainst-2 && frame.get(row, col)[0]<testAgainst+2)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     static int numHeatSignatures = 0;
     private void trackHeatSignatures(){
-
-
-
 
         if(isVideoRecording) {
             showToast("isRecording");
@@ -322,71 +337,101 @@ public class ManualFlightActivity extends Activity implements SurfaceTextureList
         }
         Bitmap sourceBitmap = Bitmap.createScaledBitmap(mVideoSurface.getBitmap(),720,480,false);
       //  showToast("" + sourceBitmap.getWidth()+ "\t" + sourceBitmap.getHeight());
-    /*
-    NOTES
-    Probability
-    Object found with both filters => prob > 90%
-    Object found with global threshold => prob < 50
-    Object found with Canny => prob > 50%
-     */
-        /*
-        TODO identify same object
-         */
-        Mat droneImage = new Mat();
-        Utils.bitmapToMat(sourceBitmap, droneImage);
-        Mat copy = droneImage.clone();
 
-        Imgproc.cvtColor(droneImage, droneImage, Imgproc.COLOR_RGB2GRAY);
-        Imgproc.GaussianBlur(droneImage, droneImage,new Size(5,5), 0);
 
+        Mat frame = new Mat();
+        Utils.bitmapToMat(sourceBitmap, frame);
+        Mat copy = frame.clone();
+        if(test4Error(frame)) {
+            System.out.println("Error");
+            return;
+        }
+        Imgproc.cvtColor(frame, frame, Imgproc.COLOR_RGB2GRAY);
+        Imgproc.GaussianBlur(frame,frame,new Size(5,5), 0);
+
+
+        Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, new  Size(5,5));
+        Imgproc.dilate(frame, frame, element);
 
         MatOfDouble mu = new MatOfDouble();
         MatOfDouble sig = new MatOfDouble();
-        Core.meanStdDev(droneImage, mu, sig);
+        Core.meanStdDev(frame, mu, sig);
 
 
         double sig1 = mu.get(0, 0)[0]+sig.get(0, 0)[0];
-        double sig2 = mu.get(0, 0)[0]+2*sig.get(0, 0)[0];
-        double sig3 = mu.get(0, 0)[0]+3*sig.get(0, 0)[0];
+        double sig2 = mu.get(0, 0)[0]+2.35*sig.get(0, 0)[0];
+        double sig3 = mu.get(0, 0)[0]+2.88*sig.get(0, 0)[0];
 
-
-
-        Imgproc.Canny(droneImage, droneImage, sig2, sig3,3);
-
+        Mat frameForRect = frame.clone();
+        Imgproc.Canny(frame, frame, sig2, sig3);
 
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
 
+        Mat hierachie = new Mat();
+        Imgproc.findContours(frame, contours, hierachie, Imgproc.RETR_CCOMP,Imgproc.CHAIN_APPROX_SIMPLE);
 
-        Imgproc.findContours(droneImage, contours, new Mat(), Imgproc.RETR_EXTERNAL,Imgproc.CHAIN_APPROX_SIMPLE);
-        Imgproc.drawContours(copy, contours, -1, new Scalar(0,255,255),2);
 
         int tmpnum = 0;
-
-        Point p = new Point(-100,-100); // -100: not a real coordinate
+        int new_object =0;
+        Point p = new Point(-1000,-1000);
         for(MatOfPoint cnt : contours) {
+
             MatOfPoint2f cnt2f = new MatOfPoint2f( cnt.toArray() );
-            if(Imgproc.contourArea(cnt) > 10 || Imgproc.arcLength(cnt2f,false)>20) {
-                // 5 and 10 too small, maybe with more gaussian blur
-                // TODO maybe closed contours have a higher probability to be real
-                double x = Imgproc.boundingRect(cnt).x;
-                double y = Imgproc.boundingRect(cnt).y;
-                if(Math.abs(p.x -  x) > 5 && Math.abs(p.y - y) > 5) {
-                    //  avoid tracking two heat signatures from the same object
+
+            if(Imgproc.contourArea(cnt) > 10 && Imgproc.arcLength(cnt2f,false)>20) {
+                Rect rContour =Imgproc.boundingRect(cnt);
+                double x1 = rContour.x;
+                double y1 = rContour.y;
+                double width1 = rContour.width;
+                double height1 = rContour.height;
+                if(Math.abs(p.x -  x1) > 20 && Math.abs(p.y - y1) > 20) {
                     tmpnum++;
-                    p.x = x;
-                    p.y = y;
-                    Imgproc.circle(copy, p, 30, new Scalar( 0, 0, 255 ),2);
-                    locs.add(calculatePosition(p.x,p.y));
-                    //6th decimal point is 1/9m => regard every location that is the same till the 6th decimal point as identical
+                    p.x = (x1+(x1+width1))/2;
+                    p.y = (y1+(y1+height1))/2;
+
+                    int weight = 1;
+                    calculatePosition(p.x,p.y,weight);
                 }
+                //System.out.println("x: " + x);
+                //System.out.println("y: " + y);
+
+            }
+
+        }
+
+        Imgproc.Canny(frameForRect, frameForRect, sig1, sig2);
+
+        List<MatOfPoint> contours1 = new ArrayList<MatOfPoint>();
+
+        Mat hierachy = new Mat();
+        Imgproc.findContours(frameForRect, contours1, hierachy, Imgproc.RETR_CCOMP,Imgproc.CHAIN_APPROX_SIMPLE);
+
+
+        Point p1 = new Point(-1000,-1000);
+        for(int j = 0; j>=0 ;j=(int)hierachy.get(0, j)[0]) {
+            if(j>=contours1.size()) {
+                break;
+            }
+            Rect r = Imgproc.boundingRect(contours1.get(j));
+            if(hierachy.get(0,j)[2]>0) { //Check if there is a child contour
+                p1.x = (r.x+r.width)/2;
+                p1.y = (r.y+r.height)/2;
+                int weight = 2;
+                calculatePosition(p1.x,p1.y,weight);
             }
         }
+
         // Number of Heatsignatures
-        if(tmpnum != numHeatSignatures || tmpnum == 0){
-            if(tmpnum > numHeatSignatures){
+        if(tmpnum != numHeatSignatures || tmpnum == 0) {
+
+            if(tmpnum > numHeatSignatures) {
               //  vibratePhone();
             }
+            else {
+                new_object = 0;
+            }
             numHeatSignatures = tmpnum;
+
         }
 
 
@@ -407,7 +452,7 @@ public class ManualFlightActivity extends Activity implements SurfaceTextureList
     }
 
 
-    private Point calculatePosition(double px_x, double px_y) {
+    private Point calculatePosition(double px_x, double px_y, int weight) {
         Point image_size = calculateFrameSize();
         double droneLongitude = FPVDemoApplication.getAircraftInstance()
                 .getFlightController()
@@ -419,17 +464,25 @@ public class ManualFlightActivity extends Activity implements SurfaceTextureList
                 .getState()
                 .getAircraftLocation()
                 .getLatitude();
+        double droneHeight = FPVDemoApplication.getAircraftInstance()
+                .getFlightController()
+                .getState()
+                .getAircraftLocation()
+                .getAltitude();
         double droneHeading = FPVDemoApplication.getAircraftInstance()
                 .getFlightController()
                 .getCompass()
                 .getHeading();
 
 
+
+
         double x_scalingfactor = image_size.x/720;
         double y_scalingfactor = image_size.y/480;
 
-        px_x = px_x - 720/2;
-        px_y = -px_y + 480/2;
+
+        px_x = px_x - 360;
+        px_y = -px_y + 240;
         double dist_x = (px_x * x_scalingfactor);
         double dist_y = (px_y * y_scalingfactor);
 
@@ -437,22 +490,30 @@ public class ManualFlightActivity extends Activity implements SurfaceTextureList
         Point dist_rot = rotateVektors(dist_x,dist_y,droneHeading);
         dist_y = dist_rot.y;
         dist_x = dist_rot.x;
+        double aeq_r = 6378137;
+        double pol_r = 6356752;
+        double r = Math.sqrt((Math.pow(Math.pow(aeq_r,2) * Math.cos(Math.toRadians(droneLatitude)),2)+Math.pow(Math.pow(pol_r,2) * Math.sin(Math.toRadians(droneLatitude)),2))/(((Math.pow(aeq_r*Math.cos(Math.toRadians(droneLatitude)),2)))+(Math.pow(pol_r*Math.sin(Math.toRadians(droneLatitude)),2))));
 
-        double geo_new_latitude  = droneLatitude  + (dist_y / 6378137) * (180 / Math.PI);
-        double geo_new_longitude = droneLongitude + (dist_x / 6378137) * (180 / Math.PI) / Math.cos((droneLatitude * Math.PI/180));
+        double geo_new_latitude  = droneLatitude  + (dist_y / r) * (180.0 / Math.PI);
+        double geo_new_longitude = droneLongitude + (dist_x / r) * (180.0 / Math.PI) / Math.cos((droneLatitude * Math.PI/180.0));
+        //System.out.println(geo_new_latitude + "\t"+ geo_new_longitude);
+        double geo_new_latitude6 = (double)Math.round(geo_new_latitude * 10000000d) / 10000000d;
+        double geo_new_longitude6 = (double)Math.round(geo_new_longitude * 10000000d) / 10000000d;
+        locs.add(new PointWeight(geo_new_latitude,geo_new_longitude,weight));
+
 
         return new Point(geo_new_latitude,geo_new_longitude);
     }
 
     private Point calculateFrameSize(){
-        // calculating by using trigonometry
-        // 2*tan(theta) = d/h
+
+        double droneAltitude = FPVDemoApplication.getAircraftInstance().getFlightController().getState().getAircraftLocation().getAltitude();
+
         double fov_angle_y = 27; // degree
         double fov_angle_x = 35; // degree
 
-        double droneAltitude = FPVDemoApplication.getAircraftInstance().getFlightController().getState().getAircraftLocation().getAltitude();
-        double dx = 2* Math.tan(fov_angle_x/2) * droneAltitude;
-        double dy = 2* Math.tan(fov_angle_y/2) * droneAltitude;
+        double dx = 2* Math.tan(Math.toRadians(fov_angle_x/2)) * droneAltitude;
+        double dy =  2* Math.tan(Math.toRadians(fov_angle_y/2)) * droneAltitude;
         return new Point(dx,dy);
 
     }
