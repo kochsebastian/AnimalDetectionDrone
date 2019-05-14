@@ -50,8 +50,6 @@ public class TimelineFlight {
     protected double homeLongitude = 181;
 
     private Activity context_;
-    private TextView text;
-    private TextView title;
 
     private List<LatLng> myFlightWaypoints;
     private int waypointIndex = 0;
@@ -61,10 +59,8 @@ public class TimelineFlight {
     private int countLanded = 0;
     private boolean once = false;
 
-    public TimelineFlight(Activity context, TextView title, TextView text) {
+    public TimelineFlight(Activity context) {
         context_ = context;
-        this.text = text;
-        this.title = title;
 
     }
 
