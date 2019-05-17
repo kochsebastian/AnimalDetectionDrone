@@ -49,7 +49,7 @@ public class TimelineFlight {
     protected double homeLatitude = 181;
     protected double homeLongitude = 181;
 
-    private Activity context_;
+    private MapActivity context_;
 
     private List<LatLng> myFlightWaypoints;
     private int waypointIndex = 0;
@@ -59,9 +59,9 @@ public class TimelineFlight {
     private int countLanded = 0;
     private boolean once = false;
 
-    public TimelineFlight(Activity context) {
+    public TimelineFlight(MapActivity context) {
         context_ = context;
-
+        ToastUtils.showToast("context: " + context);
     }
 
     private void setRunningResultToText(final String s) {
@@ -139,32 +139,11 @@ public class TimelineFlight {
         public void onEvent(Trigger trigger, TriggerEvent event, @Nullable DJIError error) {
             setRunningResultToText("Trigger " + trigger.getClass().getSimpleName() + " event is " + event.name() + (error == null ? " " : error.getDescription()));
 
-            if (trigger.getClass().equals(new AircraftLandedTrigger().getClass())) {
-
-
-//                missionControl = MissionControl.getInstance();
-//                missionControl.unscheduleEverything();
-//                missionControl.removeAllListeners();
-//                waypointIndex=0;
-            }
             if (trigger.getClass().equals(new WaypointReachedTrigger().getClass())) {
                 if (countedReached == 1) {
-                    Intent intent = new Intent(context_, FlightActivity.class);
-                    context_.startActivity(intent);
+                    FPVDemoApplication.detectionActive = true;
                 }
-//                if(countedReached == myFlightWaypoints.size()){ //isnt working
-//                    Intent intent = new Intent(context_, MapActivity.class);
-//                    context_.startActivity(intent);
-//                }
                 countedReached++;
-                context_.runOnUiThread(new Runnable() {
-                                           @Override
-                                           public void run() {
-                                               //    ToastUtils.showToast("Reached");
-                                           }
-                                       }
-                );
-
             }
         }
     };
@@ -191,13 +170,6 @@ public class TimelineFlight {
 
             triggers.add(trigger);
             triggerTarget.setTriggers(triggers);
-
-            setTimelinePlanToText(triggerTarget.getClass().getSimpleName()
-                    + " Trigger "
-                    + triggerTarget.getTriggers().size()
-                    + ") "
-                    + trigger.getClass().getSimpleName()
-                    + additionalComment);
         }
     }
 
@@ -208,9 +180,10 @@ public class TimelineFlight {
         } else {
             waypointsNext = Math.min(2, myFlightWaypoints.size() - waypointIndex);
             if (waypointsNext == 0) {
-                Intent intent = new Intent(context_, MapActivity.class);
-                context_.startActivity(intent);
+                FPVDemoApplication.detectionActive = false;
                 elements.add(new GoHomeAction());
+                context_.setMapVisible(true);
+               // context_.stBackButtonEnabled(true);
                 return;
             }
         }
@@ -257,11 +230,9 @@ public class TimelineFlight {
     }
 
     private void updateTimelineStatus(@Nullable TimelineElement element, TimelineEvent event, DJIError error) {
-
         if (element == preElement && event == preEvent && error == preError) {
             return;
         }
-
 
         if (!missionControl.isTimelineRunning() && startedMission) {
 
@@ -273,49 +244,8 @@ public class TimelineFlight {
 
             missionControl.scheduleElements(elements);
             missionControl.startTimeline();
-
             return;
 
-        }
-
-//        context_.runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                text.setText("Running: " + missionControl.isTimelineRunning() + "  Running Element: " + missionControl.getRunningElement()
-//                        +"     Time" + System.currentTimeMillis());
-//                title.setText("started: "+ startedMission + "      MissionIndex:" + missionControl.getCurrentTimelineMarker());
-//            }}
-//            );
-
-        if (error != null) {
-            if (error.getClass().equals(DJIError.COMMON_TIMEOUT)) {
-                ToastUtils.showToast("found way");
-            }
-        }
-        if (element != null) {
-//            context_.runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    title.setText("  Valid: " + missionControl.getRunningElement().checkValidity().getDescription() +"     Time" + System.currentTimeMillis());
-//                }});
-            if (element instanceof TimelineMission) {
-                setRunningResultToText(((TimelineMission) element).getMissionObject().getClass().getSimpleName()
-                        + " event is "
-                        + event.toString()
-                        + " "
-                        + (error == null ? "" : error.getDescription()));
-            } else {
-                setRunningResultToText(element.getClass().getSimpleName()
-                        + " event is "
-                        + event.toString()
-                        + " "
-                        + (error == null ? "" : error.getDescription()));
-            }
-        } else {
-            setRunningResultToText("Timeline Event is " + event.toString() + " " + (error == null
-                    ? ""
-                    : "Failed:"
-                    + error.getDescription()));
         }
 
         preEvent = event;
@@ -375,13 +305,9 @@ public class TimelineFlight {
     }
 
     public void gotoHome() {
-//        missionControl = MissionControl.getInstance();
 //        cleanTimelineDataAndLog();
-        Intent intent = new Intent(context_, MapActivity.class);
-        context_.startActivity(intent);
         missionControl = MissionControl.getInstance();
         missionControl.unscheduleEverything();
-        ;
         missionControl.removeAllListeners();
         missionControl.scheduleElement(new GoHomeAction());
         missionControl.startTimeline();
