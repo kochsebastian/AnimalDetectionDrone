@@ -41,7 +41,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static cameraopencv.java.dji.com.FPVDemoApplication.aktiv;
+import static cameraopencv.java.dji.com.FPVDemoApplication.detectionActive;
 
 
 public class FlightActivity extends Activity implements SurfaceTextureListener, OnClickListener {
@@ -277,7 +277,7 @@ public class FlightActivity extends Activity implements SurfaceTextureListener, 
 
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-        if (aktiv) {
+        if (detectionActive) {
             trackHeatSignatures();
         }
     }
@@ -297,7 +297,7 @@ public class FlightActivity extends Activity implements SurfaceTextureListener, 
             case R.id.btn_abort_flight:
                 //  showToast("hjgkdhgfkjh");
                 //FPVDemoApplication.stopTimeline();
-                aktiv = true;
+                detectionActive = true;
                 break;
 
             case R.id.btn_return_home:

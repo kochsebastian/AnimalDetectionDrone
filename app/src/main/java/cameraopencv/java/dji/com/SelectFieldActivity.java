@@ -2,17 +2,23 @@ package cameraopencv.java.dji.com;
 
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
+import cameraopencv.java.dji.com.geometrics.Point2D;
+import cameraopencv.java.dji.com.model.PolygonGrid;
+import cameraopencv.java.dji.com.utils.ToastUtils;
 import com.dji.importSDKDemo.model.ApplicationModel;
 import com.dji.importSDKDemo.model.Field;
 import com.dji.importSDKDemo.model.FieldsSelectAdapter;
+import com.google.android.gms.maps.model.LatLng;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SelectFieldActivity extends Activity implements View.OnClickListener,
         RecyclerViewClickListener {
@@ -57,9 +63,7 @@ public class SelectFieldActivity extends Activity implements View.OnClickListene
         Field f = ApplicationModel.fields.get(position);
         System.out.println("Selected field " + f.getName());
         //finish();
-        FPVDemoApplication.createTimeline(this);
-        FPVDemoApplication.startTimeline(f.getPolygon());
-       
+
         ApplicationModel.fields.remove(f);
         ApplicationModel.fields.add(0,f);
         Intent intent = new Intent(this, MapActivity.class);

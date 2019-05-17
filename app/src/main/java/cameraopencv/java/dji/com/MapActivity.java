@@ -4,16 +4,22 @@ import android.content.*;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.view.TextureView;
 import android.view.View;
 import android.widget.*;
 import cameraopencv.java.dji.com.geometrics.Point2D;
 import cameraopencv.java.dji.com.model.PolygonGrid;
+import cameraopencv.java.dji.com.utils.ToastUtils;
 import com.dji.importSDKDemo.model.ApplicationModel;
 import com.dji.importSDKDemo.model.Field;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
+import dji.common.camera.SystemState;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.sdk.base.BaseProduct;
+import dji.sdk.camera.Camera;
+import dji.sdk.camera.VideoFeeder;
+import dji.sdk.codec.DJICodecManager;
 import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.products.Aircraft;
 
@@ -26,8 +32,6 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
 
     protected static final String TAG = "MapActivity";
     private GoogleMap gMap;
-    private Button locate, add, clear;
-    private Button config, upload, start, stop;
 
     private double droneLocationLat = 181, droneLocationLng = 181;
     private Marker droneMarker = null;
@@ -44,6 +48,10 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
     private Button backButton;
     private View map;
 
+
+    private VideoSurfaceHandler videoSurfaceHandler;
+
+
     @Override
     protected void onResume(){
         super.onResume();
@@ -58,46 +66,6 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
     protected void onDestroy(){
         super.onDestroy();
         unregisterReceiver(mReceiver);
-    }
-
-    /**
-     * @Description : RETURN BTN RESPONSE FUNCTION
-     */
-    public void onReturn(View view){
-        Log.d(TAG, "onReturn");
-        this.finish();
-    }
-
-    private void initUI() {
-        homeButton = findViewById(R.id.btn_return_home);
-        homeButton.setOnClickListener(this);
-
-        abortFlightButton = findViewById(R.id.btn_abort_flight);
-        abortFlightButton.setOnClickListener(this);
-
-        toggleCameraButton = findViewById(R.id.btn_toggle_camera);
-        toggleCameraButton.setOnClickListener(this);
-
-        backButton = findViewById(R.id.btn_back);
-        backButton.setOnClickListener(this);
-        backButton.setEnabled(false);
-
-        map = findViewById(R.id.map);
-
-
-
-    }
-
-    private void initField(List<LatLng> polygon){
-
-        PolygonGrid pG = new PolygonGrid();
-        List<Point2D> wayPoints2D = pG.makeGrid(40,polygon);
-
-        List<LatLng> flightWaypoints = new ArrayList<>();
-        for(Point2D wayPoint2D : wayPoints2D){
-            markWaypointMarker(new LatLng(wayPoint2D.x,wayPoint2D.y));
-            flightWaypoints.add(new LatLng(wayPoint2D.x,wayPoint2D.y));
-        }
     }
 
     @Override
@@ -116,7 +84,28 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
         mapFragment.getMapAsync(this);
 
         initFlightController();
+
+        videoSurfaceHandler = new VideoSurfaceHandler(this);
+        videoSurfaceHandler.init();
     }
+
+    private void initUI() {
+        homeButton = findViewById(R.id.btn_return_home);
+        homeButton.setOnClickListener(this);
+
+        abortFlightButton = findViewById(R.id.btn_abort_flight);
+        abortFlightButton.setOnClickListener(this);
+
+        toggleCameraButton = findViewById(R.id.btn_toggle_camera);
+        toggleCameraButton.setOnClickListener(this);
+
+        backButton = findViewById(R.id.btn_back);
+        backButton.setOnClickListener(this);
+        backButton.setEnabled(false);
+
+        map = findViewById(R.id.map);
+    }
+
 
     @Override
     public void onClick(View v) {
@@ -128,7 +117,14 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
                 break;
 
             case R.id.btn_toggle_camera:
-
+                switch (map.getVisibility()) {
+                    case View.VISIBLE:
+                        map.setVisibility(View.INVISIBLE);
+                        break;
+                    case View.INVISIBLE:
+                        map.setVisibility(View.VISIBLE);
+                        break;
+                }
                 break;
 
             case R.id.btn_return_home:
@@ -145,61 +141,43 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
     }
 
 
+    @Override
+    public void onMapClick(LatLng latLng) {
+    }
 
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        if (gMap == null) {
-            gMap = googleMap;
-            setUpMap();
+        if (gMap != null) {
+            ToastUtils.showToast("map ready again?!");
+            return;
         }
-        gMap.moveCamera(CameraUpdateFactory.newLatLng( new LatLng(51.055705, 13.510207)));
+        gMap = googleMap;
+        gMap.setOnMapClickListener(this);
+        cameraUpdate(); // updates map position
+
         field = ApplicationModel.INSTANCE.getFields().get(0);
         PolygonGrid pG = new PolygonGrid();
         List<Point2D> wayPoints2D = pG.makeGrid(40,field.getPolygon());
-
         List<LatLng> flightWaypoints = new ArrayList<>();
         for(Point2D wayPoint2D : wayPoints2D){
             markWaypointMarker(new LatLng(wayPoint2D.x,wayPoint2D.y));
             flightWaypoints.add(new LatLng(wayPoint2D.x,wayPoint2D.y));
+            // TODO connect waypoints?
         }
-        cameraUpdate();
+
         FPVDemoApplication.createTimeline(this);
         FPVDemoApplication.startTimeline(flightWaypoints);
 
     }
 
-    private void setUpMap() {
-        gMap.setOnMapClickListener(this);// add the listener for click for amap object
-    }
-
-    @Override
-    public void onMapClick(LatLng point) {
-        if (isAdd == true){
-            markWaypoint(point);
-        }else{
-            setResultToToast("Cannot add waypoint");
-        }
-    }
-
-    private void markWaypoint(LatLng point){
-        //Create MarkerOptions object
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(point);
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
-        Marker marker = gMap.addMarker(markerOptions);
-        mMarkers.put(mMarkers.size(), marker);
-    }
 
     private void markWaypointMarker(LatLng point){
-        //Create marker
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(point);
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
         Marker marker = gMap.addMarker(markerOptions);
         mMarkers.put(mMarkers.size(), marker);
-
-        //  updatePolygon();
     }
 
 
@@ -217,7 +195,6 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
     }
 
     private void initFlightController() {
-
         BaseProduct product = FPVDemoApplication.getProductInstance();
         if (product != null && product.isConnected()) {
             if (product instanceof Aircraft) {
@@ -254,6 +231,7 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
             public void run() {
                 if (droneMarker != null) {
                     droneMarker.remove();
+                    droneMarker = null;
                 }
 
                 if (checkGpsCoordinates(droneLocationLat, droneLocationLng)) {
@@ -271,19 +249,16 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
             CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(pos, zoomlevel);
             gMap.moveCamera(cu);
         }else
-            gMap.moveCamera(CameraUpdateFactory.newLatLng( new LatLng(51.055705, 13.510207)));
+            gMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(51.055705, 13.510207)));
     }
 
 
-    private void setResultToToast(final String string){
-        MapActivity.this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(MapActivity.this, string, Toast.LENGTH_SHORT).show();
-            }
-        });
+    public void setMapVisible(boolean b) {
+        map.setVisibility(b ? View.VISIBLE : View.INVISIBLE);
+        ToastUtils.showToast("map visible " + b);
     }
-
-
+    public void stBackButtonEnabled(boolean b) {
+        backButton.setEnabled(b);
+    }
 
 }

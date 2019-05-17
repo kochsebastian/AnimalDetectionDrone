@@ -159,7 +159,6 @@ public class TimelineFlight {
     }
 
     private void addTrigger(Trigger trigger, Triggerable triggerTarget, String additionalComment) {
-
         if (triggerTarget != null) {
 
             initTrigger(trigger);
@@ -334,7 +333,6 @@ public class TimelineFlight {
 
 
     public void runTimeLine(final List<LatLng> flightWaypoints) {
-
         BaseProduct product = FPVDemoApplication.getProductInstance();
 
         if (product == null || !product.isConnected()) {

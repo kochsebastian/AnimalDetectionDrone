@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import cameraopencv.java.dji.com.geometrics.PointWeight;
+import cameraopencv.java.dji.com.utils.ToastUtils;
 import com.google.android.gms.maps.model.LatLng;
 import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
@@ -44,7 +45,8 @@ public class FPVDemoApplication extends Application  {
     private static TimelineFlight tlf;
     private static List<PointWeight> locations = new ArrayList<>();
 
-    public static boolean aktiv = false;
+    public static boolean detectionActive = false;
+
     @Override
     public Context getApplicationContext() {
         return instance;
@@ -207,9 +209,11 @@ public class FPVDemoApplication extends Application  {
         instance = this;
     }
 
-    public static void createTimeline(Activity c){
+    public static void createTimeline(MapActivity c){
         if (tlf != null) {
-            throw new RuntimeException("Timeline already existing.");
+            ToastUtils.showToast("Timeline already existing.");
+            return;
+            //throw new RuntimeException("Timeline already existing.");
         }
         tlf = new TimelineFlight(c);
     }
@@ -218,22 +222,30 @@ public class FPVDemoApplication extends Application  {
     }
     public static void startTimeline(List<LatLng> coords){
         if (tlf == null) {
-            throw new RuntimeException("Can not start timeline: not existing.");
+            ToastUtils.showToast("Can not start timeline: not existing.");
+            return;
+            //throw new RuntimeException("Can not start timeline: not existing.");
         }
         tlf.runTimeLine(coords);
     }
 
     public static void stopTimeline(){
         if (tlf == null) {
-            throw new RuntimeException("Can not stop timeline: not existing.");
+            ToastUtils.showToast("Can not stop timeline: not existing.");
+            return;
+            //throw new RuntimeException("Can not stop timeline: not existing.");
         }
         tlf.stopTimeline();
+        tlf = null;
     }
     public static void abortAndHome(){
         if (tlf == null) {
-            throw new RuntimeException("Can not execute abort and go home: not existing.");
+            ToastUtils.showToast("Can not execute abort and go home: not existing.");
+            return;
+            //throw new RuntimeException("Can not execute abort and go home: not existing.");
         }
         tlf.gotoHome();
+        tlf = null;
     }
 
     public static void addLocation(PointWeight loc){

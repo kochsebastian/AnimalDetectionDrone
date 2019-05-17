@@ -69,7 +69,7 @@ public class MenuActivity extends Activity implements View.OnClickListener {
                 break;
 
             case R.id.statistics:
-                Intent intent3 = new Intent(this, MapActivity.class);
+                Intent intent3 = new Intent(this, FlightActivity.class);
                 startActivity(intent3);
                 break;
 
