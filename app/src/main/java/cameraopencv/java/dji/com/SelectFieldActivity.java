@@ -57,9 +57,9 @@ public class SelectFieldActivity extends Activity implements View.OnClickListene
         Field f = ApplicationModel.fields.get(position);
         System.out.println("Selected field " + f.getName());
         //finish();
-
-        TimelineFlight tlf = new TimelineFlight(this); // Hinweis: Nicht sicher, ob als Kontext diese Aktiitaet uebergeben werden kann, oder ob es MapActivity.this sein muss
-        tlf.runTimeLine(f.getPolygon());
+        FPVDemoApplication.createTimeline(this);
+        FPVDemoApplication.startTimeline(f.getPolygon());
+       
         ApplicationModel.fields.remove(f);
         ApplicationModel.fields.add(0,f);
         Intent intent = new Intent(this, MapActivity.class);

@@ -129,7 +129,7 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
             flightWaypoints.add(new LatLng(wayPoint2D.x,wayPoint2D.y));
         }
         cameraUpdate();
-        FPVDemoApplication.createTimeline(this, new TextView(this), new TextView(this));
+        FPVDemoApplication.createTimeline(this);
         FPVDemoApplication.startTimeline(flightWaypoints);
 
     }

@@ -13,6 +13,7 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import cameraopencv.java.dji.com.geometrics.PointWeight;
 import com.google.android.gms.maps.model.LatLng;
 import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
@@ -23,6 +24,7 @@ import dji.sdk.products.Aircraft;
 import dji.sdk.products.HandHeld;
 import dji.sdk.sdkmanager.DJISDKManager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class FPVDemoApplication extends Application  {
@@ -40,6 +42,7 @@ public class FPVDemoApplication extends Application  {
     }
 
     private static TimelineFlight tlf;
+    private static List<PointWeight> locations = new ArrayList<>();
 
     public static boolean aktiv = false;
     @Override
@@ -204,8 +207,8 @@ public class FPVDemoApplication extends Application  {
         instance = this;
     }
 
-    public static void createTimeline(Activity c, TextView t1, TextView t2){
-        tlf = new TimelineFlight(c,t1,t2);
+    public static void createTimeline(Activity c){
+        tlf = new TimelineFlight(c);
     }
     public static TimelineFlight getTimeline(){
         return tlf;
@@ -222,5 +225,13 @@ public class FPVDemoApplication extends Application  {
     public static void aboartAndHome(){
         if(tlf!=null)
             tlf.gotoHome();
+    }
+
+    public static void addLocation(PointWeight loc){
+        // hier signal senden dass liste befüllt wurde
+        locations.add(loc);
+    }
+    public static List<PointWeight> readLocations(){
+        return locations;
     }
 }
