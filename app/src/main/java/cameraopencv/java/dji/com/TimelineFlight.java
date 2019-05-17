@@ -433,7 +433,7 @@ public class TimelineFlight {
                         myFlightWaypoints = flightWaypoints;
                         setTimelinePlanToText("home point latitude: " + homeLatitude + "\nhome point longitude: " + homeLongitude);
                         waypointIndex = 0;
-                        //   startedMission = false;
+                        startedMission = false;
                         initTimeline();
                         startTimeline();
                     } else {

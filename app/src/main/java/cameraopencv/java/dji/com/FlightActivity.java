@@ -301,7 +301,7 @@ public class FlightActivity extends Activity implements SurfaceTextureListener, 
                 break;
 
             case R.id.btn_return_home:
-                FPVDemoApplication.aboartAndHome();
+                FPVDemoApplication.abortAndHome();
                 break;
 
             default:

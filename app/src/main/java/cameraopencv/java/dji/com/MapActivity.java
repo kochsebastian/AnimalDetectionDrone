@@ -1,6 +1,5 @@
 package cameraopencv.java.dji.com;
 
-import android.app.AlertDialog;
 import android.content.*;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -13,9 +12,6 @@ import com.dji.importSDKDemo.model.ApplicationModel;
 import com.dji.importSDKDemo.model.Field;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
-import com.google.android.gms.maps.model.TileOverlayOptions;
-import com.google.maps.android.heatmaps.Gradient;
-import com.google.maps.android.heatmaps.HeatmapTileProvider;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.flightcontroller.FlightController;
@@ -42,6 +38,12 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
     private Field field;
 
 
+    private Button homeButton;
+    private Button abortFlightButton;
+    private Button toggleCameraButton;
+    private Button backButton;
+    private View map;
+
     @Override
     protected void onResume(){
         super.onResume();
@@ -67,6 +69,22 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
     }
 
     private void initUI() {
+        homeButton = findViewById(R.id.btn_return_home);
+        homeButton.setOnClickListener(this);
+
+        abortFlightButton = findViewById(R.id.btn_abort_flight);
+        abortFlightButton.setOnClickListener(this);
+
+        toggleCameraButton = findViewById(R.id.btn_toggle_camera);
+        toggleCameraButton.setOnClickListener(this);
+
+        backButton = findViewById(R.id.btn_back);
+        backButton.setOnClickListener(this);
+        backButton.setEnabled(false);
+
+        map = findViewById(R.id.map);
+
+
 
     }
 
@@ -103,6 +121,23 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+
+            case R.id.btn_back:
+                Intent intent = new Intent(this, MenuActivity.class);
+                startActivity(intent);
+                break;
+
+            case R.id.btn_toggle_camera:
+
+                break;
+
+            case R.id.btn_return_home:
+                FPVDemoApplication.abortAndHome();
+                break;
+
+            case R.id.btn_abort_flight:
+                FPVDemoApplication.stopTimeline();
+                break;
 
             default:
                 break;

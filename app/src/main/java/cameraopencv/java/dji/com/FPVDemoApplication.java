@@ -208,27 +208,36 @@ public class FPVDemoApplication extends Application  {
     }
 
     public static void createTimeline(Activity c){
+        if (tlf != null) {
+            throw new RuntimeException("Timeline already existing.");
+        }
         tlf = new TimelineFlight(c);
     }
     public static TimelineFlight getTimeline(){
         return tlf;
     }
     public static void startTimeline(List<LatLng> coords){
-        if(tlf!=null)
-            tlf.runTimeLine(coords);
-    }
-    public static void stopTimeline(){
-        if(tlf!=null){
-            tlf.stopTimeline();
+        if (tlf == null) {
+            throw new RuntimeException("Can not start timeline: not existing.");
         }
+        tlf.runTimeLine(coords);
     }
-    public static void aboartAndHome(){
-        if(tlf!=null)
-            tlf.gotoHome();
+
+    public static void stopTimeline(){
+        if (tlf == null) {
+            throw new RuntimeException("Can not stop timeline: not existing.");
+        }
+        tlf.stopTimeline();
+    }
+    public static void abortAndHome(){
+        if (tlf == null) {
+            throw new RuntimeException("Can not execute abort and go home: not existing.");
+        }
+        tlf.gotoHome();
     }
 
     public static void addLocation(PointWeight loc){
-        // hier signal senden dass liste befüllt wurde
+        // TODO hier signal senden dass liste befüllt wurde
         locations.add(loc);
     }
     public static List<PointWeight> readLocations(){
