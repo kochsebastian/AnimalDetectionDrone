@@ -184,12 +184,7 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
             gMap = googleMap;
             setUpMap();
         }
-
-
-            cameraUpdate();
-        createHeatmapOverlay();
-
-
+        cameraUpdate();
     }
 
     private void setUpMap() {
@@ -321,15 +316,6 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
             gMap.moveCamera(CameraUpdateFactory.newLatLng( new LatLng(51.055705, 13.510207)));
     }
 
-
-    private void setResultToToast(final String string){
-        AddFieldActivity.this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(AddFieldActivity.this, string, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
 
 
     private void createHeatmapOverlay(){

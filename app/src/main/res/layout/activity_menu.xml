@@ -9,26 +9,29 @@
     tools:context=".FlightActivity">
 
 
-<!--
 
-    <dji.ux.widget.FPVWidget
+    <TextureView
+            android:id="@+id/flight_video_previewer_surface"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-    <dji.ux.widget.FPVOverlayWidget
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_alignParentStart="true"/>
 
-    <LinearLayout
-            android:id="@+id/menu_controls"
+    <ImageView
+            android:id="@+id/flight_image_previewer_surface"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            tools:layout_editor_absoluteX="66dp"
-            android:background="@color/dark_gray"
-            android:padding="@dimen/content_padding">
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_alignParentStart="true"/>
 
-!-->
+
+    <fragment
+            android:id="@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            class="com.google.android.gms.maps.SupportMapFragment" />
+
+
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
