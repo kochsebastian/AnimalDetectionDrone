@@ -39,7 +39,7 @@ public class MenuActivity extends FragmentActivity implements View.OnClickListen
         super.onCreate(savedInstanceState);
 
 
-        setContentView(R.layout.activity_menu);
+        setContentView(R.layout.menu);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
@@ -64,7 +64,7 @@ public class MenuActivity extends FragmentActivity implements View.OnClickListen
 
         map = findViewById(R.id.map);
 
-        trackingActive = findViewById(R.id.onoff);
+        trackingActive = findViewById(R.id.off);
         //RadioButton off = findViewById(R.id.off);
        // off.toggle();
     }
@@ -113,10 +113,12 @@ public class MenuActivity extends FragmentActivity implements View.OnClickListen
             case R.id.on:
                 if (checked)
                     ToastUtils.showToast("On");
+                    FPVDemoApplication.detectionActive = true;
                     break;
             case R.id.onoff:
                 if (checked)
                     ToastUtils.showToast("Off");
+                    FPVDemoApplication.detectionActive = false;
                     break;
         }
     }
