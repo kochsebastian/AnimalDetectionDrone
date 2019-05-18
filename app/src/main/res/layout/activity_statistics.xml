@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".FlightActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        tools:layout_editor_absoluteX="66dp">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal" android:padding="@dimen/content_padding">
+
+            <TextView
+                    android:id="@+id/title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Statistiken"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Headline"/>
+
+            <Button
+                    android:id="@+id/statistics_back"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Zurück"/>
+
+        </LinearLayout>
+
+        <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="5">
+
+            <ImageView
+                    android:id="@+id/imageView2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="9"
+                    android:scaleType="centerCrop"
+                    tools:srcCompat="@tools:sample/backgrounds/scenic[2]"/>
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                <ScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="10">
+
+                    <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                        <android.support.v7.widget.RecyclerView
+                                android:id="@+id/statisticlist"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center_horizontal"
+                                android:layout_weight="1"
+                                tools:layout_editor_absoluteY="411dp"
+                                tools:listitem="@layout/item_statistic_entry">
+
+                        </android.support.v7.widget.RecyclerView>
+                    </LinearLayout>
+                </ScrollView>
+
+            </LinearLayout>
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>
