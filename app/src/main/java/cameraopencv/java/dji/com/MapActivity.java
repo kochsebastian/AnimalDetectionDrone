@@ -4,24 +4,19 @@ import android.content.*;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
-import android.view.TextureView;
 import android.view.View;
 import android.widget.*;
 import cameraopencv.java.dji.com.geometrics.Point2D;
 import cameraopencv.java.dji.com.model.PolygonGrid;
+import cameraopencv.java.dji.com.model.StatisticEntry;
 import cameraopencv.java.dji.com.utils.ToastUtils;
 import com.dji.importSDKDemo.model.ApplicationModel;
 import com.dji.importSDKDemo.model.Field;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
 import com.google.maps.android.heatmaps.HeatmapTileProvider;
-import dji.common.camera.SystemState;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.sdk.base.BaseProduct;
-import dji.sdk.camera.Camera;
-import dji.sdk.camera.VideoFeeder;
-import dji.sdk.codec.DJICodecManager;
 import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.products.Aircraft;
 
@@ -169,13 +164,6 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
 
             case R.id.btn_return_home:
                 FPVDemoApplication.abortAndHome();
-
-
-
-
-
-
-
                 break;
 
             case R.id.btn_abort_flight:
@@ -213,7 +201,22 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
             // TODO connect waypoints?
         }
 
-        FPVDemoApplication.createTimeline(this);
+        Runnable reachedGoalCallable = new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                                  @Override
+                                  public void run() {
+                                      setMapVisible(true);
+                                      setBackButtonEnabled(true);
+                                  }
+                              });
+                StatisticEntry statisticEntry = new StatisticEntry(ApplicationModel.fields.get(0).getName(),
+                        objectDetection.locs);
+                ApplicationModel.INSTANCE.getStatistics().add(statisticEntry);
+            }
+        };
+        FPVDemoApplication.createTimeline(this, reachedGoalCallable);
         FPVDemoApplication.startTimeline(flightWaypoints);
 
     }
@@ -303,7 +306,7 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
     public void setMapVisible(boolean b) {
         map.setVisibility(b ? View.VISIBLE : View.INVISIBLE);
     }
-    public void stBackButtonEnabled(boolean b) {
+    public void setBackButtonEnabled(boolean b) {
         backButton.setEnabled(b);
     }
 

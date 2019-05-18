@@ -56,15 +56,12 @@ public class MenuActivity extends FragmentActivity implements View.OnClickListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
         setContentView(R.layout.menu);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
         initFlightController();
         initUI(savedInstanceState);
-        ApplicationModel.INSTANCE.load();
         videoSurfaceHandler = new VideoSurfaceHandler(this);
         videoSurfaceHandler.init();
 

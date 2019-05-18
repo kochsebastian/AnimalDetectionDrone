@@ -59,9 +59,11 @@ public class TimelineFlight {
     private int countLanded = 0;
     private boolean once = false;
 
-    public TimelineFlight(MapActivity context) {
+    private Runnable reachedGoalCallable;
+
+    public TimelineFlight(MapActivity context, Runnable reachedGoalCallable) {
         context_ = context;
-        ToastUtils.showToast("context: " + context);
+        this.reachedGoalCallable = reachedGoalCallable;
     }
 
     private void setRunningResultToText(final String s) {
@@ -181,13 +183,7 @@ public class TimelineFlight {
             if (waypointsNext == 0) {
                 FPVDemoApplication.detectionActive = false;
                 elements.add(new GoHomeAction());
-                context_.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        context_.setMapVisible(true);
-                        context_.stBackButtonEnabled(true);
-                    }
-                });
+                reachedGoalCallable.run();
                 return;
             }
         }
