@@ -30,14 +30,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class MapActivity extends FragmentActivity implements View.OnClickListener, GoogleMap.OnMapClickListener, OnMapReadyCallback  {
 
-    protected static final String TAG = "MapActivity";
     private GoogleMap gMap;
 
     private double droneLocationLat = 181, droneLocationLng = 181;
     private Marker droneMarker = null;
     private FlightController mFlightController;
 
-    private boolean isAdd = false;
     private final Map<Integer, Marker> mMarkers = new ConcurrentHashMap<Integer, Marker>();
     private Field field;
 
@@ -255,7 +253,6 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
 
     public void setMapVisible(boolean b) {
         map.setVisibility(b ? View.VISIBLE : View.INVISIBLE);
-        ToastUtils.showToast("map visible " + b);
     }
     public void stBackButtonEnabled(boolean b) {
         backButton.setEnabled(b);

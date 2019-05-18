@@ -68,7 +68,7 @@
             android:layout_height="30dp"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
-            android:layout_marginTop="360dp"
+            android:layout_marginTop="340dp"
             android:layout_marginRight="14dp"
             android:background="@drawable/round_btn"
             android:text="Toggle Camera"
@@ -78,15 +78,13 @@
 
     <Button
             android:id="@+id/btn_back"
-            android:layout_width="150dp"
-            android:layout_height="50dp"
+            android:layout_width="300dp"
+            android:layout_height="5dp"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
-            android:layout_marginTop="360dp"
+            android:layout_marginTop="50dp"
             android:layout_marginRight="14dp"
-            android:background="@drawable/round_btn"
             android:text="Back"
-            android:textColor="@color/colorWhite"
             android:textSize="20dp"
     />
 

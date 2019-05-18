@@ -181,8 +181,13 @@ public class TimelineFlight {
             if (waypointsNext == 0) {
                 FPVDemoApplication.detectionActive = false;
                 elements.add(new GoHomeAction());
-                context_.setMapVisible(true);
-               // context_.stBackButtonEnabled(true);
+                context_.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        context_.setMapVisible(true);
+                        context_.stBackButtonEnabled(true);
+                    }
+                });
                 return;
             }
         }
