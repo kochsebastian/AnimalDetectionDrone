@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.Button;
@@ -11,10 +12,8 @@ import android.widget.RadioButton;
 import cameraopencv.java.dji.com.utils.ToastUtils;
 import com.dji.importSDKDemo.model.ApplicationModel;
 import com.google.android.gms.maps.*;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.*;
+import com.google.maps.android.heatmaps.HeatmapTileProvider;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.flightcontroller.FlightController;
@@ -25,13 +24,33 @@ public class MenuActivity extends FragmentActivity implements View.OnClickListen
 
     private Button mFields, mFlight, mStatistics;
     private RadioButton trackingActive;
-    private VideoSurfaceHandler videoSurfaceHandler;
     private GoogleMap gMap;
     private Marker droneMarker = null;
     private double droneLocationLat = 181, droneLocationLng = 181;
     private View map;
     private FlightController mFlightController;
     private Button toggleCameraButton;
+
+
+
+
+    private VideoSurfaceHandler videoSurfaceHandler;
+    private ObjectDetection objectDetection;
+
+    private HeatmapTileProvider heatmapTileProvider = null;
+    private TileOverlay heatmapTileOverlay = null;
+
+    // repeating task to analyse image
+    private Handler handler = new Handler();
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            if (FPVDemoApplication.detectionActive) {
+                objectDetection.trackHeatSignatures();
+            }
+            handler.postDelayed(runnable, 30);
+        }
+    };
 
 
     @Override
@@ -48,6 +67,29 @@ public class MenuActivity extends FragmentActivity implements View.OnClickListen
         ApplicationModel.INSTANCE.load();
         videoSurfaceHandler = new VideoSurfaceHandler(this);
         videoSurfaceHandler.init();
+
+
+        Runnable objectDetectedCallback = new Runnable() {
+            @Override
+            public void run() {
+                if (heatmapTileProvider == null){
+                    // Create a heat map tile provider, passing it the latlngs of the police stations.
+                    heatmapTileProvider = new HeatmapTileProvider.Builder()
+                            .weightedData(objectDetection.locs)
+                            .build();
+                    // Add a tile overlay to the map, using the heat map tile provider.
+                    heatmapTileOverlay = gMap.addTileOverlay(new TileOverlayOptions().tileProvider(heatmapTileProvider));
+                } else {
+                    heatmapTileProvider.setWeightedData(objectDetection.locs);
+                    heatmapTileOverlay.clearTileCache();
+                }
+            }
+        };
+
+        objectDetection = new ObjectDetection(this, videoSurfaceHandler.mVideoSurface,
+                videoSurfaceHandler.mImageSurface, objectDetectedCallback);
+
+        handler.postDelayed(runnable, 1000);
     }
 
     private void initUI(Bundle savedInstanceState) {
