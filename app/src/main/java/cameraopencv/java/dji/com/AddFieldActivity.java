@@ -19,6 +19,7 @@ import com.dji.importSDKDemo.model.Field;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
 import com.google.maps.android.heatmaps.HeatmapTileProvider;
+import com.google.maps.android.heatmaps.WeightedLatLng;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.flightcontroller.FlightController;
@@ -390,12 +391,17 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
         list.add(new LatLng(48.781785,9.212157));
         list.add(new LatLng(48.781832,9.212172));
 
+        List<WeightedLatLng> list2 = new ArrayList<>();
+        for(LatLng l12 : list){
+       //     list2.add(l12);
+        }
+
 
 
 
         // Create a heat map tile provider, passing it the latlngs of the police stations.
         HeatmapTileProvider mProvider = new HeatmapTileProvider.Builder()
-                .data(list)
+                .weightedData(list2)
                 .build();
         // Add a tile overlay to the map, using the heat map tile provider.
         TileOverlay mOverlay = gMap.addTileOverlay(new TileOverlayOptions().tileProvider(mProvider));

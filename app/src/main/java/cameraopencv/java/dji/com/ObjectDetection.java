@@ -2,17 +2,14 @@ package cameraopencv.java.dji.com;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
-import android.graphics.SurfaceTexture;
-import android.os.*;
+import android.os.Build;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.TextureView;
-import android.view.TextureView.SurfaceTextureListener;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
-import cameraopencv.java.dji.com.geometrics.PointWeight;
+import cameraopencv.java.dji.com.utils.ToastUtils;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.heatmaps.WeightedLatLng;
 import dji.common.camera.SettingsDefinitions;
@@ -20,14 +17,8 @@ import dji.common.camera.SystemState;
 import dji.common.error.DJIError;
 import dji.common.gimbal.Rotation;
 import dji.common.gimbal.RotationMode;
-import dji.common.product.Model;
-import dji.common.useraccount.UserAccountState;
 import dji.common.util.CommonCallbacks;
-import dji.sdk.base.BaseProduct;
 import dji.sdk.camera.Camera;
-import dji.sdk.camera.VideoFeeder;
-import dji.sdk.codec.DJICodecManager;
-import dji.sdk.useraccount.UserAccountManager;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
@@ -35,43 +26,25 @@ import org.opencv.android.Utils;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
+import static android.content.Context.VIBRATOR_SERVICE;
 
-public class ManualFlightActivity extends Activity implements SurfaceTextureListener,OnClickListener{
+public class ObjectDetection {
 
-    private static final String TAG = ManualFlightActivity.class.getName();
-    protected VideoFeeder.VideoDataListener mReceivedVideoDataListener = null;
-
-    // Codec for video live view
-    protected DJICodecManager mCodecManager = null;
-
+    Activity context;
     protected TextureView mVideoSurface = null;
     protected ImageView mImageSurface;
-    private TextView recordingTime;
-    private boolean isVideoRecording;
-
     List<WeightedLatLng> locs = new ArrayList<>();
-
-
-    private Handler handler;
-
-
-    File file ;
-
-    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+    private boolean isVideoRecording;
+    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(context) {
         @Override
         public void onManagerConnected(int status) {
             switch (status) {
                 case LoaderCallbackInterface.SUCCESS:
                 {
-                    Log.i(TAG, "OpenCV loaded successfully");
+                    // Log.i(TAG, "OpenCV loaded successfully");
 
                 } break;
                 default:
@@ -82,237 +55,33 @@ public class ManualFlightActivity extends Activity implements SurfaceTextureList
         }
     };
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-
-        super.onCreate(savedInstanceState);
-        File root = Environment.getExternalStorageDirectory();
-
-        Calendar c = Calendar.getInstance();
-
-
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-        String formattedDate = df.format(c.getTime());
-
-
-
-       // file = new File(root, "gpsData" +formattedDate +".csv");
-
-        setContentView(R.layout.activity_manual_flight);
-    //    TimelineFlight tfv = new TimelineFlight(this);
-
-
-        handler = new Handler();
-
-        initUI();
-
-        // The callback for receiving the raw H264 video data for camera live view
-        mReceivedVideoDataListener = new VideoFeeder.VideoDataListener() {
-
-            @Override
-            public void onReceive(byte[] videoBuffer, int size) {
-                if (mCodecManager != null) {
-                    mCodecManager.sendDataToDecoder(videoBuffer, size);
-                }
-            }
-        };
-
-
+    public ObjectDetection(Activity context, TextureView VideoSurface, ImageView ImageSurface) {
+        this.context = context;
+        this.mVideoSurface = VideoSurface;
+        this.mImageSurface = ImageSurface;
+        if (!OpenCVLoader.initDebug()) {
+            // Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
+            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, context, mLoaderCallback);
+        } else {
+            //  Log.d(TAG, "OpenCV library found inside package. Using it!");
+            mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
+        }
         Camera camera = FPVDemoApplication.getCameraInstance();
 
         if (camera != null) {
-
             camera.setSystemStateCallback(new SystemState.Callback() {
                 @Override
                 public void onUpdate(SystemState cameraSystemState) {
                     if (null != cameraSystemState) {
-
-                        int recordTime = cameraSystemState.getCurrentVideoRecordingTimeInSeconds();
-                        int minutes = (recordTime % 3600) / 60;
-                        int seconds = recordTime % 60;
-
-                        final String timeString = String.format("%02d:%02d", minutes, seconds);
                         isVideoRecording = cameraSystemState.isRecording();
-
-                        ManualFlightActivity.this.runOnUiThread(new Runnable() {
-
-                            @Override
-                            public void run() {
-
-                                recordingTime.setText(timeString);
-
-                                /*
-                                 * Update recordingTime TextView visibility and mRecordBtn's check state
-                                 */
-                                if (isVideoRecording){
-                                    recordingTime.setVisibility(View.VISIBLE);
-                                }else
-                                {
-                                    recordingTime.setVisibility(View.INVISIBLE);
-                                }
-                            }
-                        });
                     }
-                }
-            });
+                }});
             calibrateCamera(camera);
 
         }
-
     }
 
-    protected void onProductChange() {
-        initPreviewer();
-        loginAccount();
-    }
 
-    private void loginAccount(){
-
-        UserAccountManager.getInstance().logIntoDJIUserAccount(this,
-                new CommonCallbacks.CompletionCallbackWith<UserAccountState>() {
-                    @Override
-                    public void onSuccess(final UserAccountState userAccountState) {
-                        Log.e(TAG, "Login Success");
-                    }
-                    @Override
-                    public void onFailure(DJIError error) {
-                        showToast("Login Error:"
-                                + error.getDescription());
-                    }
-                });
-    }
-
-    @Override
-    public void onResume() {
-        Log.e(TAG, "onResume");
-        super.onResume();
-        initPreviewer();
-        onProductChange();
-        super.onResume();
-        if (!OpenCVLoader.initDebug()) {
-            Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
-            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
-        } else {
-            Log.d(TAG, "OpenCV library found inside package. Using it!");
-            mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
-        }
-        if(mVideoSurface == null) {
-            Log.e(TAG, "mVideoSurface is null");
-        }
-    }
-
-    @Override
-    public void onPause() {
-        Log.e(TAG, "onPause");
-        uninitPreviewer();
-        super.onPause();
-    }
-
-    @Override
-    public void onStop() {
-        Log.e(TAG, "onStop");
-        super.onStop();
-    }
-
-    public void onReturn(View view){
-        Log.e(TAG, "onReturn");
-        this.finish();
-    }
-
-    @Override
-    protected void onDestroy() {
-        Log.e(TAG, "onDestroy");
-        uninitPreviewer();
-        super.onDestroy();
-    }
-
-    private void initUI() {
-        // init mVideoSurface
-        mVideoSurface = (TextureView)findViewById(R.id.video_previewer_surface);
-        mImageSurface = (ImageView)findViewById(R.id.image_previewer_surface);
-     //   mImageSurface.bringToFront();
-        recordingTime = (TextView) findViewById(R.id.timer);
-
-        if (null != mVideoSurface) {
-            mVideoSurface.setSurfaceTextureListener(this);
-        }
-
-
-        recordingTime.setVisibility(View.INVISIBLE);
-
-    }
-
-    private void initPreviewer() {
-
-        BaseProduct product = FPVDemoApplication.getProductInstance();
-
-        if (product == null || !product.isConnected()) {
-            showToast(getString(R.string.disconnected));
-        } else {
-            if (null != mVideoSurface) {
-                mVideoSurface.setSurfaceTextureListener(this);
-            }
-            if (!product.getModel().equals(Model.UNKNOWN_AIRCRAFT)) {
-                VideoFeeder.getInstance().getPrimaryVideoFeed().addVideoDataListener(mReceivedVideoDataListener);
-            }
-        }
-    }
-
-    private void uninitPreviewer() {
-        Camera camera = FPVDemoApplication.getCameraInstance();
-        if (camera != null){
-            // Reset the callback
-            VideoFeeder.getInstance().getPrimaryVideoFeed().addVideoDataListener(null);
-        }
-    }
-
-    @Override
-    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        Log.e(TAG, "onSurfaceTextureAvailable");
-        if (mCodecManager == null) {
-            mCodecManager = new DJICodecManager(this, surface, width, height);
-        }
-    }
-
-    @Override
-    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-        Log.e(TAG, "onSurfaceTextureSizeChanged");
-    }
-
-    @Override
-    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        Log.e(TAG,"onSurfaceTextureDestroyed");
-        if (mCodecManager != null) {
-            mCodecManager.cleanSurface();
-            mCodecManager = null;
-        }
-
-        return false;
-    }
-
-    @Override
-    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-        boolean tracking = true;
-        if(tracking)
-            trackHeatSignatures();
-    }
-
-    public void showToast(final String msg) {
-        runOnUiThread(new Runnable() {
-            public void run() {
-                Toast.makeText(ManualFlightActivity.this, msg, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    @Override
-    public void onClick(View v) {
-
-        switch (v.getId()) {
-            default:
-                break;
-        }
-    }
 
     private static boolean test4Error(Mat frame) {
         double testAgainst = frame.get(31+10, 679+10)[0];
@@ -333,13 +102,10 @@ public class ManualFlightActivity extends Activity implements SurfaceTextureList
     private void trackHeatSignatures(){
 
         if(isVideoRecording) {
-            showToast("isRecording");
-
-          //  recordGPSData();
+            ToastUtils.showToast("isRecording");
+            //  recordGPSData();
         }
         Bitmap sourceBitmap = Bitmap.createScaledBitmap(mVideoSurface.getBitmap(),720,480,false);
-      //  showToast("" + sourceBitmap.getWidth()+ "\t" + sourceBitmap.getHeight());
-
 
         Mat frame = new Mat();
         Utils.bitmapToMat(sourceBitmap, frame);
@@ -427,7 +193,7 @@ public class ManualFlightActivity extends Activity implements SurfaceTextureList
         if(tmpnum != numHeatSignatures || tmpnum == 0) {
 
             if(tmpnum > numHeatSignatures) {
-              //  vibratePhone();
+                //  vibratePhone();
             }
             else {
                 new_object = 0;
@@ -537,8 +303,8 @@ public class ManualFlightActivity extends Activity implements SurfaceTextureList
         if(camera.isThermalCamera()){
             camera.setThermalPalette(SettingsDefinitions.ThermalPalette.WHITE_HOT,null);
             camera.setThermalIsothermEnabled(false,null);
-           camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.HIGH,null);
-          //  camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.HIGH,null);
+            camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.HIGH,null);
+            //  camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.HIGH,null);
             camera.setThermalDDE(-20,null);
             camera.setThermalACE(0,null);
             camera.setThermalSSO(100,null);
@@ -548,7 +314,7 @@ public class ManualFlightActivity extends Activity implements SurfaceTextureList
             camera.setThermalROI(SettingsDefinitions.ThermalROI.FULL,null);
 
             camera.setThermalTemperatureUnit(SettingsDefinitions.TemperatureUnit.CELSIUS,null);
-           // camera.setThermalBackgroundTemperature(15,null);
+            // camera.setThermalBackgroundTemperature(15,null);
             //camera.setThermalAtmosphericTemperature(15,null);
 
 
@@ -556,8 +322,6 @@ public class ManualFlightActivity extends Activity implements SurfaceTextureList
 
         }
         calibrateGimbal();
-
-
 
     }
 
@@ -579,53 +343,11 @@ public class ManualFlightActivity extends Activity implements SurfaceTextureList
 
     }
 
-    private void vibratePhone() {
+    /*private void vibratePhone() {
         if (Build.VERSION.SDK_INT >= 26) {
             ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(VibrationEffect.createOneShot(150, VibrationEffect.DEFAULT_AMPLITUDE));
         } else {
             ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(150);
         }
-    }
-
-    private void recordGPSData(){
-
-        FileWriter writer;
-        double latitude = FPVDemoApplication.getAircraftInstance()
-                .getFlightController()
-                .getState()
-                .getAircraftLocation()
-                .getLatitude();
-        double longitude = FPVDemoApplication.getAircraftInstance()
-                .getFlightController()
-                .getState()
-                .getAircraftLocation()
-                .getLongitude();
-
-
-        double height = FPVDemoApplication.getAircraftInstance().getFlightController().getState().getAircraftLocation().getAltitude();
-
-        double heading = (double) FPVDemoApplication.getAircraftInstance().getFlightController().getCompass().getHeading();//  getAircraftHeadDirection();//  getCompass().getHeading();
-
-       //
-        try {
-
-                writer = new FileWriter(file,true);
-
-               // writeCsvHeader("a","b",writer);
-                writeCsvData(latitude,longitude,height, heading, writer);
-                writer.flush();
-                writer.close();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-
-    }
-
-    private void writeCsvData(double lat, double longi, double height, double heading,FileWriter writer) throws IOException {
-        String line = String.format("%f,%f,%f,%f \n", lat, longi,height, heading);
-        writer.write(line);
-    }
-
+    }*/
 }
