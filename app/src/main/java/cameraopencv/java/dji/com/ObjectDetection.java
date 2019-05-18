@@ -36,7 +36,7 @@ public class ObjectDetection {
     Activity context;
     protected TextureView mVideoSurface = null;
     protected ImageView mImageSurface;
-    List<WeightedLatLng> locs = new ArrayList<>();
+    public List<WeightedLatLng> locs = new ArrayList<>();
     private boolean isVideoRecording;
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(context) {
         @Override
@@ -54,11 +54,14 @@ public class ObjectDetection {
             }
         }
     };
+    private Runnable objectDetectedCallback;
 
-    public ObjectDetection(Activity context, TextureView VideoSurface, ImageView ImageSurface) {
+    public ObjectDetection(Activity context, TextureView VideoSurface, ImageView ImageSurface,
+                           Runnable objectDetectedCallback) {
         this.context = context;
         this.mVideoSurface = VideoSurface;
         this.mImageSurface = ImageSurface;
+        this.objectDetectedCallback = objectDetectedCallback;
         if (!OpenCVLoader.initDebug()) {
             // Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, context, mLoaderCallback);
@@ -129,8 +132,8 @@ public class ObjectDetection {
 
 
         double sig1 = mu.get(0, 0)[0]+sig.get(0, 0)[0];
-        double sig2 = mu.get(0, 0)[0]+1*sig.get(0, 0)[0];// 2.35
-        double sig3 = mu.get(0, 0)[0]+1.2*sig.get(0, 0)[0];//2.88
+        double sig2 = mu.get(0, 0)[0]+2.35*sig.get(0, 0)[0];
+        double sig3 = mu.get(0, 0)[0]+2.88*sig.get(0, 0)[0];
 
         Mat frameForRect = frame.clone();
         Imgproc.Canny(frame, frame, sig2, sig3);
@@ -159,7 +162,6 @@ public class ObjectDetection {
                     p.x = (x1+(x1+width1))/2;
                     p.y = (y1+(y1+height1))/2;
                     Imgproc.circle(copy, p, 30, new Scalar(0, 0, 255), 2);
-
                     int weight = 1;
                     calculatePosition(p.x,p.y,weight);
                 }
@@ -189,7 +191,7 @@ public class ObjectDetection {
                 Imgproc.rectangle(copy, r.tl(), r.br(), new Scalar(0, 0, 255), 2);
                 p1.x = (r.x+r.width)/2;
                 p1.y = (r.y+r.height)/2;
-                int weight = 2;
+                int weight = 10;
                 calculatePosition(p1.x,p1.y,weight);
             }
         }
@@ -275,6 +277,7 @@ public class ObjectDetection {
         LatLng loc = new LatLng(geo_new_latitude,geo_new_longitude);
         locs.add(new WeightedLatLng(loc,weight));
 
+        objectDetectedCallback.run();
 
         return new Point(geo_new_latitude,geo_new_longitude);
     }

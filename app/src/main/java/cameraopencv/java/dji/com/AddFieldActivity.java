@@ -379,7 +379,7 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
 
         List<WeightedLatLng> list2 = new ArrayList<>();
         for(LatLng l12 : list){
-       //     list2.add(l12);
+            list2.add(new WeightedLatLng(l12, Math.random()));
         }
 
 

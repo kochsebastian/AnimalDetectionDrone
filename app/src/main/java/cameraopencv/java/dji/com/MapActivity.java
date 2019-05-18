@@ -15,6 +15,7 @@ import com.dji.importSDKDemo.model.ApplicationModel;
 import com.dji.importSDKDemo.model.Field;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
+import com.google.maps.android.heatmaps.HeatmapTileProvider;
 import dji.common.camera.SystemState;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.sdk.base.BaseProduct;
@@ -50,6 +51,9 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
 
     private VideoSurfaceHandler videoSurfaceHandler;
     private ObjectDetection objectDetection;
+
+    private HeatmapTileProvider heatmapTileProvider = null;
+    private TileOverlay heatmapTileOverlay = null;
 
 
     // repeating task to analyse image
@@ -102,8 +106,25 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
         videoSurfaceHandler = new VideoSurfaceHandler(this);
         videoSurfaceHandler.init();
 
+        Runnable objectDetectedCallback = new Runnable() {
+            @Override
+            public void run() {
+                if (heatmapTileProvider == null){
+                    // Create a heat map tile provider, passing it the latlngs of the police stations.
+                    heatmapTileProvider = new HeatmapTileProvider.Builder()
+                            .weightedData(objectDetection.locs)
+                            .build();
+                    // Add a tile overlay to the map, using the heat map tile provider.
+                    heatmapTileOverlay = gMap.addTileOverlay(new TileOverlayOptions().tileProvider(heatmapTileProvider));
+                } else {
+                    heatmapTileProvider.setWeightedData(objectDetection.locs);
+                    heatmapTileOverlay.clearTileCache();
+                }
+            }
+        };
+
         objectDetection = new ObjectDetection(this, videoSurfaceHandler.mVideoSurface,
-                videoSurfaceHandler.mImageSurface);
+                videoSurfaceHandler.mImageSurface, objectDetectedCallback);
 
         handler.postDelayed(runnable, 1000);
     }
@@ -147,8 +168,14 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
                 break;
 
             case R.id.btn_return_home:
-                //FPVDemoApplication.abortAndHome();
-                objectDetection.trackHeatSignatures();
+                FPVDemoApplication.abortAndHome();
+
+
+
+
+
+
+
                 break;
 
             case R.id.btn_abort_flight:
