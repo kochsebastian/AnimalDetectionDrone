@@ -1,19 +1,15 @@
 package cameraopencv.java.dji.com;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
 import cameraopencv.java.dji.com.utils.ToastUtils;
 import com.dji.importSDKDemo.model.ApplicationModel;
-import com.dji.mapkit.core.maps.DJIMap;
-import com.dji.mapkit.core.models.DJILatLng;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -23,7 +19,6 @@ import dji.common.flightcontroller.FlightControllerState;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.products.Aircraft;
-import dji.ux.widget.MapWidget;
 
 public class MenuActivity extends FragmentActivity implements View.OnClickListener, OnMapReadyCallback {
 

@@ -2,6 +2,7 @@ package cameraopencv.java.dji.com;
 
 import android.content.*;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.TextureView;
@@ -48,6 +49,20 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
 
 
     private VideoSurfaceHandler videoSurfaceHandler;
+    private ObjectDetection objectDetection;
+
+
+    // repeating task to analyse image
+    private Handler handler = new Handler();
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            if (FPVDemoApplication.detectionActive) {
+                objectDetection.trackHeatSignatures();
+            }
+            handler.postDelayed(runnable, 30);
+        }
+    };
 
 
     @Override
@@ -63,6 +78,7 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
     @Override
     protected void onDestroy(){
         super.onDestroy();
+        handler.removeCallbacks(runnable);
         unregisterReceiver(mReceiver);
     }
 
@@ -85,6 +101,11 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
 
         videoSurfaceHandler = new VideoSurfaceHandler(this);
         videoSurfaceHandler.init();
+
+        objectDetection = new ObjectDetection(this, videoSurfaceHandler.mVideoSurface,
+                videoSurfaceHandler.mImageSurface);
+
+        handler.postDelayed(runnable, 1000);
     }
 
     private void initUI() {
@@ -126,7 +147,8 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
                 break;
 
             case R.id.btn_return_home:
-                FPVDemoApplication.abortAndHome();
+                //FPVDemoApplication.abortAndHome();
+                objectDetection.trackHeatSignatures();
                 break;
 
             case R.id.btn_abort_flight:

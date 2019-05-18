@@ -99,7 +99,7 @@ public class ObjectDetection {
     }
 
     static int numHeatSignatures = 0;
-    private void trackHeatSignatures(){
+    public void trackHeatSignatures(){
 
         if(isVideoRecording) {
             ToastUtils.showToast("isRecording");
@@ -125,10 +125,12 @@ public class ObjectDetection {
         MatOfDouble sig = new MatOfDouble();
         Core.meanStdDev(frame, mu, sig);
 
+        ToastUtils.showToast("mu: " +  mu.get(0, 0)[0]);
+
 
         double sig1 = mu.get(0, 0)[0]+sig.get(0, 0)[0];
-        double sig2 = mu.get(0, 0)[0]+2.35*sig.get(0, 0)[0];
-        double sig3 = mu.get(0, 0)[0]+2.88*sig.get(0, 0)[0];
+        double sig2 = mu.get(0, 0)[0]+1*sig.get(0, 0)[0];// 2.35
+        double sig3 = mu.get(0, 0)[0]+1.2*sig.get(0, 0)[0];//2.88
 
         Mat frameForRect = frame.clone();
         Imgproc.Canny(frame, frame, sig2, sig3);
@@ -137,7 +139,7 @@ public class ObjectDetection {
 
         Mat hierachie = new Mat();
         Imgproc.findContours(frame, contours, hierachie, Imgproc.RETR_CCOMP,Imgproc.CHAIN_APPROX_SIMPLE);
-
+        Imgproc.drawContours(copy, contours, -1, new Scalar(0, 255, 255), 2);
 
         int tmpnum = 0;
         int new_object =0;
@@ -156,6 +158,7 @@ public class ObjectDetection {
                     tmpnum++;
                     p.x = (x1+(x1+width1))/2;
                     p.y = (y1+(y1+height1))/2;
+                    Imgproc.circle(copy, p, 30, new Scalar(0, 0, 255), 2);
 
                     int weight = 1;
                     calculatePosition(p.x,p.y,weight);
@@ -182,6 +185,8 @@ public class ObjectDetection {
             }
             Rect r = Imgproc.boundingRect(contours1.get(j));
             if(hierachy.get(0,j)[2]>0) { //Check if there is a child contour
+                //Imgproc.rectangle(copy, r, new Scalar(0, 0, 255), 2);
+                Imgproc.rectangle(copy, r.tl(), r.br(), new Scalar(0, 0, 255), 2);
                 p1.x = (r.x+r.width)/2;
                 p1.y = (r.y+r.height)/2;
                 int weight = 2;
