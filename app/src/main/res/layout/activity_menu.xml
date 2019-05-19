@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:custom="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/background_blue"
-    android:orientation="horizontal"
-    tools:context=".MenuActivity">
-
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                xmlns:tools="http://schemas.android.com/tools"
+                xmlns:custom="http://schemas.android.com/apk/res-auto"
+                android:background="@color/background_blue"
+                android:orientation="vertical">
 
     <TextureView
             android:id="@+id/flight_video_previewer_surface"
@@ -23,13 +21,11 @@
             android:layout_gravity="center"
             android:layout_alignParentStart="true"/>
 
-
     <fragment
             android:id="@+id/map"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             class="com.google.android.gms.maps.SupportMapFragment"/>
-
     <Button
             android:id="@+id/btn_toggle_camera"
             android:layout_width="150dp"
@@ -44,16 +40,44 @@
             android:textSize="20dp"
     />
 
+    <!--Take off and return home buttons on left -->
+    <LinearLayout
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="12dp"
+            android:orientation="vertical">
+
+        <dji.ux.widget.TakeOffWidget
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginBottom="12dp"/>
+
+        <dji.ux.widget.ReturnHomeWidget
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="12dp"/>
+    </LinearLayout>
+    <!-- Pre-flight checklist panel -->
+    <dji.ux.panel.PreFlightCheckListPanel
+            android:layout_width="400dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/signal"
+            custom:excludeItem="ESCStatus"
+            android:visibility="gone"/>
+
     <LinearLayout
             android:id="@+id/menu_controls"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="5"
             android:orientation="horizontal"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:layout_marginTop="0dp"
-            android:layout_marginStart="0dp" android:background="@color/colorWhite">
+            android:layout_marginStart="0dp"
+            android:background="@color/white"
+            >
 
         <Button
                 android:id="@+id/fields"
@@ -77,18 +101,18 @@
                 android:text="Statistiken"/>
 
     </LinearLayout>
+
+
+
     <RadioGroup
-            android:checkedButton="@+id/onoff"
-            android:id="@+id/test"
+            android:checkedButton="@+id/off"
+            android:id="@+id/toggle"
             android:layout_width="100dp"
             android:layout_height="30dp"
             android:layout_marginLeft="50dp"
             android:layout_marginRight="50dp"
-            android:layout_below="@id/menu_controls"
             android:background="@drawable/white_out_line"
-            android:orientation="horizontal"
-            android:layout_alignParentBottom="true"
-            android:layout_marginBottom="240dp">
+            android:orientation="horizontal" android:layout_marginTop="77dp" android:layout_alignParentTop="true">
 
         <RadioButton
                 android:layout_marginTop="1dp"
@@ -102,14 +126,14 @@
                 android:button="@null"
                 android:gravity="center"
                 android:text="On"
-
-                android:textColor="@color/white"/>
+                android:onClick="onRadioButtonClicked"
+                android:textColor="@color/black"/>
 
         <RadioButton
                 android:layout_marginRight="1dp"
                 android:layout_marginTop="1dp"
                 android:layout_marginBottom="1dp"
-                android:id="@+id/onoff"
+                android:id="@+id/off"
                 android:layout_width="50dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -117,9 +141,10 @@
                 android:button="@null"
                 android:gravity="center"
                 android:text="Off"
-
-                android:textColor="@color/white"/>
+                android:onClick="onRadioButtonClicked"
+                android:textColor="@color/black"/>
     </RadioGroup>
+
 
     <LinearLayout
             android:id="@+id/signal"
@@ -174,7 +199,8 @@
             android:layout_marginTop="18dp"
             android:layout_width="match_parent"
             android:background="@color/transparent"
-            android:layout_height="20dp"/>
+            android:layout_height="20dp"
+            android:layout_below="@id/signal"/>
 
     <LinearLayout
             android:layout_width="match_parent"
@@ -276,6 +302,7 @@
             android:gravity="center"
             android:visibility="invisible"
             tools:ignore="RtlHardcoded"/>
+
 
 
 

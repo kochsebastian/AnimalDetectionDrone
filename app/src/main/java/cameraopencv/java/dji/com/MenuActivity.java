@@ -30,10 +30,6 @@ public class MenuActivity extends FragmentActivity implements View.OnClickListen
     private View map;
     private FlightController mFlightController;
     private Button toggleCameraButton;
-
-
-
-
     private VideoSurfaceHandler videoSurfaceHandler;
     private ObjectDetection objectDetection;
 
@@ -58,7 +54,7 @@ public class MenuActivity extends FragmentActivity implements View.OnClickListen
         super.onCreate(savedInstanceState);
 
 
-        setContentView(R.layout.menu);
+        setContentView(R.layout.activity_menu);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
@@ -157,7 +153,7 @@ public class MenuActivity extends FragmentActivity implements View.OnClickListen
                     ToastUtils.showToast("On");
                     FPVDemoApplication.detectionActive = true;
                     break;
-            case R.id.onoff:
+            case R.id.off:
                 if (checked)
                     ToastUtils.showToast("Off");
                     FPVDemoApplication.detectionActive = false;

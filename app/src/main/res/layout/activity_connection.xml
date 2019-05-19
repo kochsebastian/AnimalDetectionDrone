@@ -6,24 +6,25 @@
                 android:orientation="vertical">
 
     <TextView
-            android:id="@+id/text_connection_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="Status: No Product Connected"
-            android:textColor="@android:color/black"
-            android:textSize="20dp"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="Drone Object Detection"
+            android:id="@+id/textView"
+            android:layout_marginTop="30dp"
+
             android:textStyle="bold"
-            android:layout_alignBottom="@+id/text_product_info"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="89dp" />
+            android:textSize="20dp"
+            android:textColor="@color/colorBlack"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"/>
 
     <TextView
             android:id="@+id/text_product_info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="270dp"
+            android:layout_marginTop="80dp"
             android:text="@string/product_information"
             android:textColor="@android:color/black"
             android:textSize="20dp"
@@ -31,49 +32,54 @@
             android:textStyle="bold"
     />
 
+    <TextView
+            android:id="@+id/text_connection_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="120dp"
+            android:text="Status: No Product Connected"
+            android:textColor="@android:color/black"
+            android:textSize="20dp"
+            android:textStyle="bold"
+
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="54dp"/>
+
+
+
     <Button
             android:id="@+id/btn_open"
             android:layout_width="150dp"
             android:layout_height="55dp"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="350dp"
             android:background="@drawable/round_btn"
             android:text="Open"
+            android:layout_marginTop="170dp"
             android:textColor="@color/colorWhite"
             android:textSize="20dp"
-    />
+            android:layout_centerHorizontal="true"
+            />
     <Button
             android:id="@+id/btn_debug"
             android:layout_width="150dp"
-            android:layout_height="55dp"
+            android:layout_height="35dp"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="500dp"
+            android:layout_marginTop="230dp"
             android:background="@drawable/round_btn"
             android:text="Debug"
             android:textColor="@color/colorWhite"
             android:textSize="20dp"
-    />
+            />
+
 
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="430dp"
+            android:layout_marginTop="280dp"
             android:text="@string/sdk_version"
             android:textSize="15dp"
             android:id="@+id/textView2" />
 
-    <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="Drone Object Detection"
-            android:id="@+id/textView"
-            android:layout_marginTop="58dp"
-            android:textStyle="bold"
-            android:textSize="20dp"
-            android:textColor="@color/colorBlack"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"/>
+
 
 </RelativeLayout>
