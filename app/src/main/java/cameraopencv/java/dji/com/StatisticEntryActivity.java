@@ -13,8 +13,10 @@ import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.gms.maps.model.TileOverlayOptions;
+import com.google.maps.android.geometry.Point;
 import com.google.maps.android.heatmaps.HeatmapTileProvider;
 import com.google.maps.android.heatmaps.WeightedLatLng;
+import com.google.maps.android.projection.SphericalMercatorProjection;
 
 public class StatisticEntryActivity extends FragmentActivity implements View.OnClickListener, OnMapReadyCallback {
 
@@ -49,8 +51,7 @@ public class StatisticEntryActivity extends FragmentActivity implements View.OnC
 
         switch(v.getId()) {
             case R.id.btn_back:
-                Intent intent = new Intent(this, StatisticsActivity.class);
-                startActivity(intent);
+                finish();
                 break;
         }
 
@@ -85,7 +86,8 @@ public class StatisticEntryActivity extends FragmentActivity implements View.OnC
         x /= stat.getDetections().size();
         y /= stat.getDetections().size();
 
-        CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(new LatLng(x, y), zoomlevel);
+        LatLng loc = new SphericalMercatorProjection(1.0D).toLatLng(new Point(x, y));
+        CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(loc, zoomlevel);
         gMap.moveCamera(cu);
     }
 

@@ -1,3 +1,9 @@
 - Felder speichern und laden
 - Field Select Button
 - Field Select Mittig (Layout generell)
+
+- Statistiken
+- Menü größer
+- Speichern
+- Menü auswahl/löschen button
+- Objekterkennung anpassen

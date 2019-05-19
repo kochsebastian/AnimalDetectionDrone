@@ -132,6 +132,10 @@
                 android:name="cameraopencv.java.dji.com.StatisticsActivity"
                 android:label="@string/app_name"
                 android:screenOrientation="landscape" />
+        <activity
+                android:name="cameraopencv.java.dji.com.StatisticEntryActivity"
+                android:label="@string/app_name"
+                android:screenOrientation="landscape" />
 
 
     </application>
