@@ -10,6 +10,8 @@ object ApplicationModel {
     lateinit var fields: MutableList<Field>
     lateinit var statistics: MutableList<StatisticEntry>
 
+    var statisticEntrySelected: StatisticEntry? = null
+
 
     fun load() {
         // TODO

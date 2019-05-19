@@ -61,11 +61,16 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
             if (FPVDemoApplication.detectionActive) {
                 objectDetection.trackHeatSignatures();
             } else {
-                Bitmap displayBitmap = Bitmap.createScaledBitmap(videoSurfaceHandler.mVideoSurface.getBitmap(),
-                        videoSurfaceHandler.mVideoSurface.getBitmap().getWidth(),
-                        videoSurfaceHandler.mVideoSurface.getBitmap().getHeight(),false);
-                videoSurfaceHandler.mImageSurface.setImageBitmap(null);
-                videoSurfaceHandler.mImageSurface.setImageBitmap(displayBitmap);
+                MapActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Bitmap displayBitmap = Bitmap.createScaledBitmap(videoSurfaceHandler.mVideoSurface.getBitmap(),
+                                videoSurfaceHandler.mVideoSurface.getBitmap().getWidth(),
+                                videoSurfaceHandler.mVideoSurface.getBitmap().getHeight(),false);
+                        videoSurfaceHandler.mImageSurface.setImageBitmap(null);
+                        videoSurfaceHandler.mImageSurface.setImageBitmap(displayBitmap);
+                    }
+                });
             }
             handler.postDelayed(runnable, 30);
         }

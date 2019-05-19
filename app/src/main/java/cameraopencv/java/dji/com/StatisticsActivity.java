@@ -58,7 +58,8 @@ public class StatisticsActivity extends Activity implements View.OnClickListener
         StatisticEntry s = ApplicationModel.statistics.get(position);
         System.out.println("Selected statistic " + s.getFieldName());
 
-        Intent intent = new Intent(this, MapActivity.class);
+        ApplicationModel.INSTANCE.setStatisticEntrySelected(s);
+        Intent intent = new Intent(this, StatisticEntryActivity.class);
         startActivity(intent);
 
 

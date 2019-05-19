@@ -45,11 +45,18 @@ public class MenuActivity extends FragmentActivity implements View.OnClickListen
             if (FPVDemoApplication.detectionActive) {
                 objectDetection.trackHeatSignatures();
             } else {
-                Bitmap displayBitmap = Bitmap.createScaledBitmap(videoSurfaceHandler.mVideoSurface.getBitmap(),
-                        videoSurfaceHandler.mVideoSurface.getBitmap().getWidth(),
-                        videoSurfaceHandler.mVideoSurface.getBitmap().getHeight(),false);
-                videoSurfaceHandler.mImageSurface.setImageBitmap(null);
-                videoSurfaceHandler.mImageSurface.setImageBitmap(displayBitmap);
+                MenuActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (videoSurfaceHandler.mVideoSurface.isAvailable()) {
+                            Bitmap displayBitmap = Bitmap.createScaledBitmap(videoSurfaceHandler.mVideoSurface.getBitmap(),
+                                    videoSurfaceHandler.mVideoSurface.getBitmap().getWidth(),
+                                    videoSurfaceHandler.mVideoSurface.getBitmap().getHeight(), false);
+                            videoSurfaceHandler.mImageSurface.setImageBitmap(null);
+                            videoSurfaceHandler.mImageSurface.setImageBitmap(displayBitmap);
+                        }
+                    }
+                });
             }
             handler.postDelayed(runnable, 30);
         }
