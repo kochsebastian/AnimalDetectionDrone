@@ -60,7 +60,6 @@ public class MenuActivity extends FragmentActivity implements View.OnClickListen
 
         initFlightController();
         initUI(savedInstanceState);
-        ApplicationModel.INSTANCE.load();
         videoSurfaceHandler = new VideoSurfaceHandler(this);
         videoSurfaceHandler.init();
 
@@ -123,7 +122,7 @@ public class MenuActivity extends FragmentActivity implements View.OnClickListen
                 break;
 
             case R.id.statistics:
-                Intent intent3 = new Intent(this, FlightActivity.class);
+                Intent intent3 = new Intent(this, StatisticsActivity.class);
                 startActivity(intent3);
                 break;
 

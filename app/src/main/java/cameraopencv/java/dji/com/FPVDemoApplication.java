@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import cameraopencv.java.dji.com.geometrics.PointWeight;
 import cameraopencv.java.dji.com.utils.ToastUtils;
+import com.dji.importSDKDemo.model.ApplicationModel;
 import com.google.android.gms.maps.model.LatLng;
 import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
@@ -53,7 +54,7 @@ public class FPVDemoApplication extends Application  {
     }
 
     public FPVDemoApplication() {
-
+        ApplicationModel.INSTANCE.load();
     }
 
     /**
@@ -209,13 +210,13 @@ public class FPVDemoApplication extends Application  {
         instance = this;
     }
 
-    public static void createTimeline(MapActivity c){
+    public static void createTimeline(MapActivity c, Runnable reachedGoalCallable){
         if (tlf != null) {
             ToastUtils.showToast("Timeline already existing.");
             return;
             //throw new RuntimeException("Timeline already existing.");
         }
-        tlf = new TimelineFlight(c);
+        tlf = new TimelineFlight(c, reachedGoalCallable);
     }
     public static TimelineFlight getTimeline(){
         return tlf;
