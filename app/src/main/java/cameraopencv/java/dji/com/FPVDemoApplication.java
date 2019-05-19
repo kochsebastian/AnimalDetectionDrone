@@ -210,13 +210,14 @@ public class FPVDemoApplication extends Application  {
         instance = this;
     }
 
-    public static void createTimeline(MapActivity c, Runnable reachedGoalCallable){
+    public static void createTimeline(MapActivity c,Runnable reachedGoalCallback, Runnable reachedFirstCallback,
+                                      Runnable goHomeCallback){
         if (tlf != null) {
             ToastUtils.showToast("Timeline already existing.");
             return;
             //throw new RuntimeException("Timeline already existing.");
         }
-        tlf = new TimelineFlight(c, reachedGoalCallable);
+        tlf = new TimelineFlight(c, reachedGoalCallback, reachedFirstCallback, goHomeCallback);
     }
     public static TimelineFlight getTimeline(){
         return tlf;

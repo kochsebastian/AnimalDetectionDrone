@@ -157,12 +157,8 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
                 }
                 ToastUtils.showToast(""+flightWaypoints.size());
                 double distance = pG.calcDistance(wayPoints2D);
-                if(distance >= 12000)
+                if(distance >= 600)
                     ToastUtils.showToast("Feld wahrscheinlich zu gross!");
-
-                TextView title = findViewById(R.id.add_field_title);
-                TextView text = findViewById(R.id.add_field_description);
-
 
                 //  Intent intent = new Intent(this, MapActivity.class);
                  //startActivity(intent);
@@ -183,14 +179,12 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
     public void onMapReady(GoogleMap googleMap) {
         if (gMap == null) {
             gMap = googleMap;
-            setUpMap();
+            gMap.setOnMapClickListener(this);
+            gMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
         }
         cameraUpdate();
     }
 
-    private void setUpMap() {
-        gMap.setOnMapClickListener(this);// add the listener for click for amap object
-    }
 
     @Override
     public void onMapClick(LatLng point) {
@@ -317,82 +311,6 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
             gMap.moveCamera(CameraUpdateFactory.newLatLng( new LatLng(51.055705, 13.510207)));
     }
 
-
-
-    private void createHeatmapOverlay(){
-
-        List<LatLng> list = new ArrayList<>();
-        list.add(new LatLng(48.781766,9.212176));
-        list.add(new LatLng(48.781788,9.212161));
-        list.add(new LatLng(48.781830,9.212170));
-        list.add(new LatLng(48.781766,9.212176));
-        list.add(new LatLng(48.781788,9.212161));
-        list.add(new LatLng(48.781830,9.212170));
-        list.add(new LatLng(48.781766,9.212176));
-        list.add(new LatLng(48.781789,9.212157));
-        list.add(new LatLng(48.781830,9.212170));
-        list.add(new LatLng(48.781766,9.212176));
-        list.add(new LatLng(48.781789,9.212157));
-        list.add(new LatLng(48.781830,9.212170));
-        list.add(new LatLng(48.781765,9.212182));
-        list.add(new LatLng(48.781788,9.212161));
-        list.add(new LatLng(48.781832,9.212171));
-        list.add(new LatLng(48.781766,9.212177));
-        list.add(new LatLng(48.781788,9.212161));
-        list.add(new LatLng(48.781832,9.212171));
-        list.add(new LatLng(48.781765,9.212182));
-        list.add(new LatLng(48.781788,9.212161));
-        list.add(new LatLng(48.781830,9.212170));
-        list.add(new LatLng(48.781765,9.212182));
-        list.add(new LatLng(48.781788,9.212161));
-        list.add(new LatLng(48.781830,9.212170));
-        list.add(new LatLng(48.781765,9.212182));
-        list.add(new LatLng(48.781785,9.212156));
-        list.add(new LatLng(48.781830,9.212170));
-        list.add(new LatLng(48.781765,9.212182));
-        list.add(new LatLng(48.781785,9.212156));
-        list.add(new LatLng(48.781830,9.212170));
-        list.add(new LatLng(48.781765,9.212182));
-        list.add(new LatLng(48.781785,9.212156));
-        list.add(new LatLng(48.781830,9.212170));
-        list.add(new LatLng(48.781765,9.212183));
-        list.add(new LatLng(48.781785,9.212156));
-        list.add(new LatLng(48.781830,9.212170));
-        list.add(new LatLng(48.781765,9.212183));
-        list.add(new LatLng(48.781785,9.212156));
-        list.add(new LatLng(48.781830,9.212170));
-        list.add(new LatLng(48.781765,9.212183));
-        list.add(new LatLng(48.781785,9.212156));
-        list.add(new LatLng(48.781830,9.212170));
-        list.add(new LatLng(48.781765,9.212183));
-        list.add(new LatLng(48.781783,9.212161));
-        list.add(new LatLng(48.781830,9.212170));
-        list.add(new LatLng(48.781765,9.212183));
-        list.add(new LatLng(48.781785,9.212156));
-        list.add(new LatLng(48.781830,9.212170));
-        list.add(new LatLng(48.781762,9.212180));
-        list.add(new LatLng(48.781785,9.212157));
-        list.add(new LatLng(48.781832,9.212172));
-        list.add(new LatLng(48.781765,9.212183));
-        list.add(new LatLng(48.781785,9.212157));
-        list.add(new LatLng(48.781832,9.212172));
-
-        List<WeightedLatLng> list2 = new ArrayList<>();
-        for(LatLng l12 : list){
-            list2.add(new WeightedLatLng(l12, Math.random()));
-        }
-
-
-
-
-        // Create a heat map tile provider, passing it the latlngs of the police stations.
-        HeatmapTileProvider mProvider = new HeatmapTileProvider.Builder()
-                .weightedData(list2)
-                .build();
-        // Add a tile overlay to the map, using the heat map tile provider.
-        TileOverlay mOverlay = gMap.addTileOverlay(new TileOverlayOptions().tileProvider(mProvider));
-
-    }
 
 
 }

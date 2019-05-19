@@ -1,6 +1,5 @@
 package cameraopencv.java.dji.com
 import android.app.Activity
-import android.app.Application
 import android.graphics.SurfaceTexture
 import android.util.Log
 import android.view.TextureView
@@ -8,7 +7,6 @@ import android.widget.ImageView
 import dji.sdk.codec.DJICodecManager
 
 import cameraopencv.java.dji.com.FPVDemoApplication.detectionActive
-import dji.common.camera.SystemState
 import dji.sdk.camera.VideoFeeder
 
 class VideoSurfaceHandler(val activity: Activity) : TextureView.SurfaceTextureListener {

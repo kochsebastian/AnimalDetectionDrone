@@ -60,10 +60,15 @@ public class TimelineFlight {
     private boolean once = false;
 
     private Runnable reachedGoalCallable;
+    private Runnable reachedFirstCallback;
+    private Runnable goHomeCallback;
 
-    public TimelineFlight(MapActivity context, Runnable reachedGoalCallable) {
+    public TimelineFlight(MapActivity context, Runnable reachedGoalCallback, Runnable reachedFirstCallback,
+                          Runnable goHomeCallback) {
         context_ = context;
-        this.reachedGoalCallable = reachedGoalCallable;
+        this.reachedGoalCallable = reachedGoalCallback;
+        this.reachedFirstCallback = reachedFirstCallback;
+        this.goHomeCallback = goHomeCallback;
     }
 
     private void setRunningResultToText(final String s) {
@@ -143,7 +148,7 @@ public class TimelineFlight {
 
             if (trigger.getClass().equals(new WaypointReachedTrigger().getClass())) {
                 if (countedReached == 1) {
-                    FPVDemoApplication.detectionActive = true;
+                    reachedFirstCallback.run();
                 }
                 countedReached++;
             }
@@ -181,7 +186,6 @@ public class TimelineFlight {
         } else {
             waypointsNext = Math.min(2, myFlightWaypoints.size() - waypointIndex);
             if (waypointsNext == 0) {
-                FPVDemoApplication.detectionActive = false;
                 elements.add(new GoHomeAction());
                 reachedGoalCallable.run();
                 return;
@@ -259,8 +263,8 @@ public class TimelineFlight {
             return null;
         }
 
-        WaypointMission.Builder waypointMissionBuilder = new WaypointMission.Builder().autoFlightSpeed(10f)
-                .maxFlightSpeed(10f)
+        WaypointMission.Builder waypointMissionBuilder = new WaypointMission.Builder().autoFlightSpeed(6f)
+                .maxFlightSpeed(6f)
                 .setExitMissionOnRCSignalLostEnabled(false)
                 .finishedAction(
                         WaypointMissionFinishedAction.NO_ACTION)
@@ -305,6 +309,7 @@ public class TimelineFlight {
     }
 
     public void gotoHome() {
+        goHomeCallback.run();
 //        cleanTimelineDataAndLog();
         missionControl = MissionControl.getInstance();
         missionControl.unscheduleEverything();

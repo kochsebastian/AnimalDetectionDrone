@@ -1,6 +1,7 @@
 package cameraopencv.java.dji.com;
 
 import android.content.*;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
@@ -25,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MapActivity extends FragmentActivity implements View.OnClickListener, GoogleMap.OnMapClickListener, OnMapReadyCallback  {
+public class MapActivity extends FragmentActivity implements View.OnClickListener, OnMapReadyCallback  {
 
     private GoogleMap gMap;
 
@@ -42,6 +43,7 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
     private Button toggleCameraButton;
     private Button backButton;
     private View map;
+    private RadioGroup onOffToggle;
 
 
     private VideoSurfaceHandler videoSurfaceHandler;
@@ -58,6 +60,12 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
         public void run() {
             if (FPVDemoApplication.detectionActive) {
                 objectDetection.trackHeatSignatures();
+            } else {
+                Bitmap displayBitmap = Bitmap.createScaledBitmap(videoSurfaceHandler.mVideoSurface.getBitmap(),
+                        videoSurfaceHandler.mVideoSurface.getBitmap().getWidth(),
+                        videoSurfaceHandler.mVideoSurface.getBitmap().getHeight(),false);
+                videoSurfaceHandler.mImageSurface.setImageBitmap(null);
+                videoSurfaceHandler.mImageSurface.setImageBitmap(displayBitmap);
             }
             handler.postDelayed(runnable, 30);
         }
@@ -138,6 +146,8 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
         backButton.setOnClickListener(this);
         backButton.setEnabled(false);
 
+        onOffToggle = findViewById(R.id.toggle);
+
         map = findViewById(R.id.map);
     }
 
@@ -176,8 +186,23 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
     }
 
 
-    @Override
-    public void onMapClick(LatLng latLng) {
+    public void onRadioButtonClicked(View view) {
+        // Is the button now checked?
+        boolean checked = ((RadioButton) view).isChecked();
+
+        // Check which radio button was clicked
+        switch(view.getId()) {
+            case R.id.on:
+                if (checked)
+                    ToastUtils.showToast("On");
+                FPVDemoApplication.detectionActive = true;
+                break;
+            case R.id.off:
+                if (checked)
+                    ToastUtils.showToast("Off");
+                FPVDemoApplication.detectionActive = false;
+                break;
+        }
     }
 
 
@@ -188,7 +213,7 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
             return;
         }
         gMap = googleMap;
-        gMap.setOnMapClickListener(this);
+        gMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
         cameraUpdate(); // updates map position
 
         field = ApplicationModel.INSTANCE.getFields().get(0);
@@ -201,23 +226,52 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
             // TODO connect waypoints?
         }
 
-        Runnable reachedGoalCallable = new Runnable() {
+        Runnable reachedGoalCallback = new Runnable() {
             @Override
             public void run() {
                 runOnUiThread(new Runnable() {
-                                  @Override
-                                  public void run() {
-                                      setMapVisible(true);
-                                      setBackButtonEnabled(true);
-                                  }
-                              });
+                    @Override
+                    public void run() {
+                        setMapVisible(true);
+                        setBackButtonEnabled(true);
+                        onOffToggle.check(R.id.off);
+
+                    }
+                });
                 StatisticEntry statisticEntry = new StatisticEntry(ApplicationModel.fields.get(0).getName(),
                         System.currentTimeMillis(),
                         objectDetection.locs);
                 ApplicationModel.INSTANCE.getStatistics().add(statisticEntry);
+                FPVDemoApplication.detectionActive = false;
             }
         };
-        FPVDemoApplication.createTimeline(this, reachedGoalCallable);
+        Runnable reachedFirstCallback = new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        onOffToggle.check(R.id.on);
+
+                    }
+                });
+                FPVDemoApplication.detectionActive = true;
+            }
+        };
+        Runnable goHomeCallback = new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        onOffToggle.check(R.id.off);
+
+                    }
+                });
+                FPVDemoApplication.detectionActive = false;
+            }
+        };
+        FPVDemoApplication.createTimeline(this, reachedGoalCallback, reachedFirstCallback, goHomeCallback);
         FPVDemoApplication.startTimeline(flightWaypoints);
 
     }

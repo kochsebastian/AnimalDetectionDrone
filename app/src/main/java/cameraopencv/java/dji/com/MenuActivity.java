@@ -3,6 +3,7 @@ package cameraopencv.java.dji.com;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
@@ -43,6 +44,12 @@ public class MenuActivity extends FragmentActivity implements View.OnClickListen
         public void run() {
             if (FPVDemoApplication.detectionActive) {
                 objectDetection.trackHeatSignatures();
+            } else {
+                Bitmap displayBitmap = Bitmap.createScaledBitmap(videoSurfaceHandler.mVideoSurface.getBitmap(),
+                        videoSurfaceHandler.mVideoSurface.getBitmap().getWidth(),
+                        videoSurfaceHandler.mVideoSurface.getBitmap().getHeight(),false);
+                videoSurfaceHandler.mImageSurface.setImageBitmap(null);
+                videoSurfaceHandler.mImageSurface.setImageBitmap(displayBitmap);
             }
             handler.postDelayed(runnable, 30);
         }
@@ -173,6 +180,7 @@ public class MenuActivity extends FragmentActivity implements View.OnClickListen
             return;
         }
         gMap = googleMap;
+        gMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
         //gMap.setOnMapClickListener(this);
         cameraUpdate(); // updates map position
     }
