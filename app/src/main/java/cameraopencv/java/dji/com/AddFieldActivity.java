@@ -157,13 +157,8 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
                 }
                 ToastUtils.showToast(""+flightWaypoints.size());
                 double distance = pG.calcDistance(wayPoints2D);
-                if(distance >= 600)
+                if(distance >= 7200)
                     ToastUtils.showToast("Feld wahrscheinlich zu gross!");
-
-                //  Intent intent = new Intent(this, MapActivity.class);
-                 //startActivity(intent);
-              //  Intent intent = new Intent(this, FlightActivity.class);
-               // startActivity(intent);
 
                 finish();
                 break;

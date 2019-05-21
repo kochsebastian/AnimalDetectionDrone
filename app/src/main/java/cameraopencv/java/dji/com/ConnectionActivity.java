@@ -2,10 +2,8 @@ package cameraopencv.java.dji.com;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
+import android.support.v7.app.AlertDialog;
+import android.content.*;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -263,13 +261,13 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
         switch (v.getId()) {
 
             case R.id.btn_open: {
-                Intent intent = new Intent(this, MenuActivity.class);
-                startActivity(intent);
+                showAlertDialogButtonClicked(v,this);
+
                 break;
             }
             case R.id.btn_debug: {
-                Intent intent= new Intent(this,MenuActivity.class);
-                startActivity(intent);
+                showAlertDialogButtonClicked(v,this);
+
                 break;
             }
             case R.id.textView2:{
@@ -292,5 +290,25 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
 
             }
         });
+    }
+    public void showAlertDialogButtonClicked(View view,final Context c) {
+
+        // setup the alert builder
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Controller Setup");
+        builder.setMessage("Bitte Controller in F-Mode stellen");
+
+        // add a button
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Intent intent = new Intent(c, MenuActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        // create and show the alert dialog
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 }
