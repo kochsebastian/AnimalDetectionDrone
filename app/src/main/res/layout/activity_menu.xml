@@ -277,7 +277,7 @@
     <dji.ux.widget.controls.CameraControlsWidget
             android:id="@+id/CameraCapturePanel"
             android:layout_alignParentRight="true"
-            android:layout_below="@id/camera"
+            android:layout_below="@id/signal"
             android:layout_width="50dp"
             android:layout_height="213dp"
             tools:ignore="RtlHardcoded"/>
