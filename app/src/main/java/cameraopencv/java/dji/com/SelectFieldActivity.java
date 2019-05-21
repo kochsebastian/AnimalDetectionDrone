@@ -60,12 +60,13 @@ public class SelectFieldActivity extends Activity implements View.OnClickListene
 
     @Override
     public void recyclerViewListClicked(@NotNull View v, int position) {
-        Field f = ApplicationModel.fields.get(position);
+        Field f = ApplicationModel.INSTANCE.getFields().get(position);
         System.out.println("Selected field " + f.getName());
         //finish();
 
-        ApplicationModel.fields.remove(f);
-        ApplicationModel.fields.add(0,f);
+        ApplicationModel.INSTANCE.getFields().remove(f);
+        ApplicationModel.INSTANCE.getFields().add(0,f);
+        ApplicationModel.INSTANCE.save();
         Intent intent = new Intent(this, MapActivity.class);
         startActivity(intent);
 

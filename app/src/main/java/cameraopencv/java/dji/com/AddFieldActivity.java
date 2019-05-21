@@ -128,6 +128,8 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
                 PolygonGrid pG = new PolygonGrid();
                 List<Point2D> wayPoints2D;
                 try {
+                    // TODO: DO NOT CALL THIS METHOD IF DISTANCE TOO BIG: App will freeze (for example if markers over whole africa)
+                    // und algorithmus hat immer NPE, wenn Feld 1x zu klein war. STATE zurücksetzen
                     wayPoints2D = pG.makeGrid(40, polygon);
                 }catch(IllegalArgumentException e){
                     this.runOnUiThread(new Runnable() {
@@ -149,6 +151,7 @@ public class AddFieldActivity extends FragmentActivity implements View.OnClickLi
 
                 Field field = new Field(fieldName.getText().toString(), polygon);
                 ApplicationModel.INSTANCE.getFields().add(0,field);
+                ApplicationModel.INSTANCE.save();
 
                 List<LatLng> flightWaypoints = new ArrayList<>();
                 for(Point2D wayPoint2D : wayPoints2D){

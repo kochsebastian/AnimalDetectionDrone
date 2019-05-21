@@ -73,7 +73,8 @@ public class FieldsActivity extends Activity implements View.OnClickListener,
 
     @Override
     public void recyclerViewListClicked(@NotNull View v, int position) {
-        ApplicationModel.fields.remove(position);
+        ApplicationModel.INSTANCE.getFields().remove(position);
+        ApplicationModel.INSTANCE.save();
         recyclerView.getAdapter().notifyItemRemoved(position);
     }
 

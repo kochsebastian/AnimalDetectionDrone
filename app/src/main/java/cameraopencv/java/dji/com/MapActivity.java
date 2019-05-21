@@ -243,10 +243,11 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
 
                     }
                 });
-                StatisticEntry statisticEntry = new StatisticEntry(ApplicationModel.fields.get(0).getName(),
+                StatisticEntry statisticEntry = new StatisticEntry(ApplicationModel.INSTANCE.getFields().get(0).getName(),
                         System.currentTimeMillis(),
                         objectDetection.locs);
                 ApplicationModel.INSTANCE.getStatistics().add(statisticEntry);
+                ApplicationModel.INSTANCE.save();
                 FPVDemoApplication.detectionActive = false;
             }
         };

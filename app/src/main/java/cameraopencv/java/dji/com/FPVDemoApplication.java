@@ -39,10 +39,6 @@ public class FPVDemoApplication extends Application  {
 
     private static Application instance;
 
-    public void setContext(Application application) {
-        instance = application;
-    }
-
     private static TimelineFlight tlf;
     private static List<PointWeight> locations = new ArrayList<>();
 
@@ -53,7 +49,8 @@ public class FPVDemoApplication extends Application  {
         return instance;
     }
 
-    public FPVDemoApplication() {
+    public FPVDemoApplication(Application context) {
+        instance = context;
         ApplicationModel.INSTANCE.load();
     }
 

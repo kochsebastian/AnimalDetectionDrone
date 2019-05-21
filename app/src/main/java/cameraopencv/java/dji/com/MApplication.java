@@ -13,8 +13,7 @@ public class MApplication extends Application {
         super.attachBaseContext(paramContext);
         Helper.install(MApplication.this);
         if (fpvDemoApplication == null) {
-            fpvDemoApplication = new FPVDemoApplication();
-            fpvDemoApplication.setContext(this);
+            fpvDemoApplication = new FPVDemoApplication(this);
         }
     }
 
