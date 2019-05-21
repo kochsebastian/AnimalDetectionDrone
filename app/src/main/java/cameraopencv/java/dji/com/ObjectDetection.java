@@ -308,27 +308,21 @@ public class ObjectDetection {
 
 
     private void calibrateCamera(Camera camera){
-        if(camera.isThermalCamera()){
-            camera.setThermalPalette(SettingsDefinitions.ThermalPalette.WHITE_HOT,null);
-            camera.setThermalIsothermEnabled(false,null);
-            camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.HIGH,null);
-            //  camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.HIGH,null);
-            camera.setThermalDDE(-20,null);
-            camera.setThermalACE(0,null);
-            camera.setThermalSSO(100,null);
-            camera.setThermalContrast(32,null);
-            camera.setThermalBrightness(8192,null);
-            camera.setThermalFFCMode(SettingsDefinitions.ThermalFFCMode.AUTO,null);
-            camera.setThermalROI(SettingsDefinitions.ThermalROI.FULL,null);
-
-            camera.setThermalTemperatureUnit(SettingsDefinitions.TemperatureUnit.CELSIUS,null);
-            // camera.setThermalBackgroundTemperature(15,null);
-            //camera.setThermalAtmosphericTemperature(15,null);
-
-
-
-
-        }
+        camera.setThermalScene(SettingsDefinitions.ThermalScene.PROFILE_1,null);
+        camera.setThermalPalette(SettingsDefinitions.ThermalPalette.WHITE_HOT,null);
+        camera.setThermalIsothermEnabled(false,null);
+        camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.AUTO,null);
+        //  camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.HIGH,null);
+        camera.setThermalDDE(-20,null);
+        camera.setThermalACE(0,null);
+        camera.setThermalSSO(100,null);
+        camera.setThermalContrast(32,null);
+        camera.setThermalBrightness(8192,null);
+        camera.setThermalFFCMode(SettingsDefinitions.ThermalFFCMode.AUTO,null);
+        camera.setThermalROI(SettingsDefinitions.ThermalROI.FULL,null);
+        camera.setThermalTemperatureUnit(SettingsDefinitions.TemperatureUnit.CELSIUS,null);
+        // camera.setThermalBackgroundTemperature(15,null);
+        //camera.setThermalAtmosphericTemperature(15,null);
         calibrateGimbal();
 
     }
