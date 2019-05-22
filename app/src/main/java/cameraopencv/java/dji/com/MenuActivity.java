@@ -10,6 +10,7 @@ import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import cameraopencv.java.dji.com.utils.ToastUtils;
 import com.dji.importSDKDemo.model.ApplicationModel;
 import com.google.android.gms.maps.*;
@@ -24,7 +25,7 @@ public class MenuActivity extends FragmentActivity implements View.OnClickListen
 
 
     private Button mFields, mFlight, mStatistics;
-    private RadioButton trackingActive;
+    private RadioGroup trackingActive;
     private GoogleMap gMap;
     private Marker droneMarker = null;
     private double droneLocationLat = 181, droneLocationLng = 181;
@@ -115,7 +116,7 @@ public class MenuActivity extends FragmentActivity implements View.OnClickListen
 
         map = findViewById(R.id.map);
 
-        trackingActive = findViewById(R.id.off);
+        trackingActive = findViewById(R.id.toggle);
         //RadioButton off = findViewById(R.id.off);
        // off.toggle();
     }
@@ -162,14 +163,16 @@ public class MenuActivity extends FragmentActivity implements View.OnClickListen
         // Check which radio button was clicked
         switch(view.getId()) {
             case R.id.on:
-                if (checked)
+                if (checked) {
                     ToastUtils.showToast("On");
                     FPVDemoApplication.detectionActive = true;
+                }
                     break;
             case R.id.off:
-                if (checked)
+                if (checked) {
                     ToastUtils.showToast("Off");
                     FPVDemoApplication.detectionActive = false;
+                }
                     break;
         }
     }

@@ -219,6 +219,10 @@ public class FPVDemoApplication extends Application  {
     public static TimelineFlight getTimeline(){
         return tlf;
     }
+    public static void destroyTimeline(){
+        if(tlf != null)
+            tlf = null;
+    }
     public static void startTimeline(List<LatLng> coords){
         if (tlf == null) {
             ToastUtils.showToast("Can not start timeline: not existing.");

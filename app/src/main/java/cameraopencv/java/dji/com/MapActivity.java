@@ -162,6 +162,7 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
         switch (v.getId()) {
 
             case R.id.btn_back:
+                FPVDemoApplication.destroyTimeline();
                 Intent intent = new Intent(this, MenuActivity.class);
                 startActivity(intent);
                 break;
@@ -198,14 +199,16 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
         // Check which radio button was clicked
         switch(view.getId()) {
             case R.id.on:
-                if (checked)
+                if (checked){
                     ToastUtils.showToast("On");
-                FPVDemoApplication.detectionActive = true;
+                    FPVDemoApplication.detectionActive = true;
+                 }
                 break;
             case R.id.off:
-                if (checked)
+                if (checked) {
                     ToastUtils.showToast("Off");
-                FPVDemoApplication.detectionActive = false;
+                    FPVDemoApplication.detectionActive = false;
+                }
                 break;
         }
     }

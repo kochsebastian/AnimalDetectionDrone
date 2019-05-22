@@ -18,8 +18,6 @@ public class GeneralUtils {
 
   //  private static final double r =6378137;
 
-  //  public static final double ONE_METER_LAT = (1.00 / r) * (180.0 / Math.PI);
-   // public static final double ONE_METER_LONG = (1.0 / r) * (180.0 / Math.PI) / Math.cos((lat0 * Math.PI/180.0));
 
     public static boolean isFastDoubleClick() {
         long time = System.currentTimeMillis();

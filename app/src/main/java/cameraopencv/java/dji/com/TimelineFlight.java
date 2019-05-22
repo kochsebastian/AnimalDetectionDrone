@@ -303,7 +303,7 @@ public class TimelineFlight {
             }
         });
         missionControl = MissionControl.getInstance();
-        MissionControl.getInstance().stopTimeline();
+        missionControl.getInstance().stopTimeline();
         missionControl.unscheduleEverything();
         missionControl.removeAllListeners();
     }
