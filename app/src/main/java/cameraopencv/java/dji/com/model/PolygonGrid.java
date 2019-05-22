@@ -30,6 +30,10 @@ public class PolygonGrid {
     private  double imageHeight = 5;
     private Polygon p;
 
+    private double oneMeter_x = ONE_METER_OFFSET;
+    private double oneMeter_y = ONE_METER_OFFSET;
+
+
     private void calculateGridSize (double altitude,double latitude){
 
 
@@ -39,8 +43,9 @@ public class PolygonGrid {
         double fov_angle_x = 35; // degree
 
         double droneAltitude = altitude;
+        oneMeter_x =calcLongitudeOffset(latitude);
         imageWidth = 2* Math.tan(Math.toRadians(fov_angle_x/2)) * droneAltitude *  calcLongitudeOffset(latitude);
-        imageHeight = 2* Math.tan(Math.toRadians(fov_angle_y/2)) * droneAltitude * ONE_METER_OFFSET ;
+        imageHeight = 2* Math.tan(Math.toRadians(fov_angle_y/2)) * droneAltitude * ONE_METER_OFFSET;
     }
     
     public boolean isContainedInField(LatLng point) {
@@ -97,13 +102,14 @@ public class PolygonGrid {
         //System.out.println(myShapes.size()+ "     "+ copyHorizontal.size() + "     " + copyVertical.size());
         return waypoints;
     }
-
-
-    private int makeGridItVert(double x, double y, Polygon p) {
+    private int makeGridItVert(double x,double y,Polygon p) {
         int i=0;
+        int offset = 0;
+        double dir = 1;
 
-        while(x+imageWidth <= p.getMaxX()) {
-            while(y+imageHeight<=p.getMaxY()) {
+        while(x <= p.getMaxX()) {
+            dir = 1;
+            while(y<=p.getMaxY()) {
                 if(p.contains(new Point2D(x,y))
                         && p.contains(new Point2D(x+imageWidth,y+imageHeight))
                         && p.contains(new Point2D(x+imageWidth,y))
@@ -111,18 +117,19 @@ public class PolygonGrid {
                 {
                     Rect2D r = new Rect2D(x,y,imageWidth,imageHeight);
                     Point2D center = new Point2D(r.centerX(), r.centerY());
+
                     myShapesVert.add(r);
-                    i++;
                     myCentersVert.add(center);
 
 
                 }
-                y+=imageHeight;
+                y+=oneMeter_y;
             }
-
             x+=imageWidth;
-            while(y-imageHeight>=p.getMinY()) {
-                y-=imageHeight;
+            y=p.getMaxY();
+            dir = -1;
+            while(y >= p.getMinY()) {
+
                 if(p.contains(new Point2D(x,y))
                         && p.contains(new Point2D(x+imageWidth,y+imageHeight))
                         && p.contains(new Point2D(x+imageWidth,y))
@@ -133,27 +140,68 @@ public class PolygonGrid {
                     Point2D center = new Point2D(r.centerX(), r.centerY());
 
                     myShapesVert.add(r);
-
-                    i++;
-
                     myCentersVert.add(center);
 
                 }
-            }
+                y-=oneMeter_y;
 
+
+            }
+            y=p.getMinY();
             x+=imageWidth;
 
         }
+        x=p.getMaxX()-imageWidth-oneMeter_x;
+        if(dir == 1) {
+            while(y >= p.getMinY()) {
+                if(p.contains(new Point2D(x,y))
+                        && p.contains(new Point2D(x+imageWidth,y+imageHeight))
+                        && p.contains(new Point2D(x+imageWidth,y))
+                        && p.contains(new Point2D(x,y+imageHeight)))
+                {
+                    Rect2D r = new Rect2D(x,y,imageWidth,imageHeight);
+
+                    Point2D center = new Point2D(r.centerX(), r.centerY());
+
+                    myShapesVert.add(r);
+                    myCentersVert.add(center);
+
+
+                }
+                y-=oneMeter_y;
+            }
+        }else {
+            while(y<=p.getMaxY()) {
+                if(p.contains(new Point2D(x,y))
+                        && p.contains(new Point2D(x+imageWidth,y+imageHeight))
+                        && p.contains(new Point2D(x+imageWidth,y))
+                        && p.contains(new Point2D(x,y+imageHeight)))
+                {
+                    Rect2D r = new Rect2D(x,y,imageWidth,imageHeight);
+                    Point2D center = new Point2D(r.centerX(), r.centerY());
+
+                    myShapesVert.add(r);
+                    myCentersVert.add(center);
+
+
+                }
+                y+=oneMeter_y;
+            }
+        }
+
         return i;
     }
 
-    private  int makeGridItHori(double x,double y,Polygon p) {
+    private int makeGridItHori(double x,double y,Polygon p) {
         int i=0;
+        int offset = 0;
+        double dir = 1;
         double copySize = imageHeight;
         imageHeight = imageWidth;
         imageWidth = copySize;
-        while(y+imageHeight <= p.getMaxY()) {
-            while(x+imageHeight<=p.getMaxX()) {
+        while(y <= p.getMaxY()) {
+            dir=1;
+            while(x<=p.getMaxX()) {
                 if(p.contains(new Point2D(x,y))
                         && p.contains(new Point2D(x+imageWidth,y+imageHeight))
                         && p.contains(new Point2D(x+imageWidth,y))
@@ -163,18 +211,20 @@ public class PolygonGrid {
                     Point2D center = new Point2D(r.centerX(), r.centerY());
 
                     myShapesHori.add(r);
-
+                    offset ++;
                     i++;
                     myCentersHori.add(center);
 
 
                 }
-                x+=imageWidth;
-            }
 
+                x+=oneMeter_x;
+            }
             y+=imageHeight;
-            while(x-imageWidth>=p.getMinX()) {
-                x-=imageWidth;
+            x=p.getMaxX();
+            dir=-1;
+            while(x>=p.getMinX()) {
+
                 if(p.contains(new Point2D(x,y))
                         && p.contains(new Point2D(x+imageWidth,y+imageHeight))
                         && p.contains(new Point2D(x+imageWidth,y))
@@ -185,16 +235,53 @@ public class PolygonGrid {
                     Point2D center = new Point2D(r.centerX(), r.centerY());
 
                     myShapesHori.add(r);
-
-                    i++;
-
                     myCentersHori.add(center);
 
                 }
+                x-=oneMeter_x;
             }
+            x=p.getMinX();
+
 
             y+=imageHeight;
 
+        }
+        y=p.getMaxY()-imageHeight-oneMeter_y;
+        if(dir == 1) {
+            while(x >= p.getMinX()) {
+                if(p.contains(new Point2D(x,y))
+                        && p.contains(new Point2D(x+imageWidth,y+imageHeight))
+                        && p.contains(new Point2D(x+imageWidth,y))
+                        && p.contains(new Point2D(x,y+imageHeight)))
+                {
+                    Rect2D r = new Rect2D(x,y,imageWidth,imageHeight);
+
+                    Point2D center = new Point2D(r.centerX(), r.centerY());
+
+                    myShapesHori.add(r);
+                    myCentersHori.add(center);
+
+
+                }
+                x-=oneMeter_x;
+            }
+        }else {
+            while(x<=p.getMaxX()) {
+                if(p.contains(new Point2D(x,y))
+                        && p.contains(new Point2D(x+imageWidth,y+imageHeight))
+                        && p.contains(new Point2D(x+imageWidth,y))
+                        && p.contains(new Point2D(x,y+imageHeight)))
+                {
+                    Rect2D r = new Rect2D(x,y,imageWidth,imageHeight);
+                    Point2D center = new Point2D(r.centerX(), r.centerY());
+
+                    myShapesHori.add(r);
+                    myCentersHori.add(center);
+
+
+                }
+                x+=oneMeter_x;
+            }
         }
         imageWidth = imageHeight;
         imageHeight = copySize;
@@ -202,14 +289,16 @@ public class PolygonGrid {
     }
 
 
+
+
     private  List<Rect2D> hasTwoNeighboursVertical(List<Rect2D> myShapes,List<Point2D> myCenters) {
         int delete = 0;
         for(int i = 0; i< myCenters.size();i++) {
             if (i == 0 || i == myCenters.size() - 1)
                 continue;
-            if (((Math.abs((myCenters.get(i).y - imageHeight) - myCenters.get(i - 1).y) < THRESHOLD)
+            if (((Math.abs((myCenters.get(i).y - oneMeter_y) - myCenters.get(i - 1).y) < THRESHOLD)
                     && Math.abs((myCenters.get(i).x) - myCenters.get(i - 1).x) < THRESHOLD)
-                    && ((Math.abs((myCenters.get(i).y + imageHeight) - myCenters.get(i + 1).y) < THRESHOLD)
+                    && ((Math.abs((myCenters.get(i).y + oneMeter_y) - myCenters.get(i + 1).y) < THRESHOLD)
                     && Math.abs((myCenters.get(i).x) - myCenters.get(i + 1).x) < THRESHOLD)) {
 //                if(delete < 5){
 //                    delete++;
@@ -218,9 +307,9 @@ public class PolygonGrid {
 //                    delete = 0;
 //                }
             }
-            if (((Math.abs((myCenters.get(i).y + imageHeight) - myCenters.get(i - 1).y) < THRESHOLD)
+            if (((Math.abs((myCenters.get(i).y + oneMeter_y) - myCenters.get(i - 1).y) < THRESHOLD)
                     && Math.abs((myCenters.get(i).x) - myCenters.get(i - 1).x) < THRESHOLD)
-                    && ((Math.abs((myCenters.get(i).y - imageHeight) - myCenters.get(i + 1).y) < THRESHOLD)
+                    && ((Math.abs((myCenters.get(i).y - oneMeter_y) - myCenters.get(i + 1).y) < THRESHOLD)
                     && Math.abs((myCenters.get(i).x) - myCenters.get(i + 1).x) < THRESHOLD)) {
 //                if(delete < 5){
 //                    delete++;
@@ -243,9 +332,9 @@ public class PolygonGrid {
         for(int i = 0; i< myCenters.size();i++) {
             if(i == 0 || i == myCenters.size()-1)
                 continue;
-            if (((Math.abs((myCenters.get(i).x - imageWidth) - myCenters.get(i - 1).x) < THRESHOLD)
+            if (((Math.abs((myCenters.get(i).x - oneMeter_x) - myCenters.get(i - 1).x) < THRESHOLD)
                     && Math.abs((myCenters.get(i).y) - myCenters.get(i - 1).y) < THRESHOLD)
-                    && ((Math.abs((myCenters.get(i).x + imageWidth) - myCenters.get(i + 1).x) < THRESHOLD)
+                    && ((Math.abs((myCenters.get(i).x + oneMeter_x) - myCenters.get(i + 1).x) < THRESHOLD)
                     && Math.abs((myCenters.get(i).y) - myCenters.get(i + 1).y) < THRESHOLD)) {
 //                if(delete < 5){
 //                    delete++;
@@ -255,9 +344,9 @@ public class PolygonGrid {
 //                }
 
             }
-            if (((Math.abs((myCenters.get(i).x + imageWidth) - myCenters.get(i - 1).x) < THRESHOLD)
+            if (((Math.abs((myCenters.get(i).x + oneMeter_x) - myCenters.get(i - 1).x) < THRESHOLD)
                     && Math.abs((myCenters.get(i).y) - myCenters.get(i - 1).y) < THRESHOLD)
-                    && ((Math.abs((myCenters.get(i).x - imageWidth) - myCenters.get(i + 1).x) < THRESHOLD)
+                    && ((Math.abs((myCenters.get(i).x - oneMeter_x) - myCenters.get(i + 1).x) < THRESHOLD)
                     && Math.abs((myCenters.get(i).y) - myCenters.get(i + 1).y) < THRESHOLD)) {
 //                if(delete < 5){
 //                    delete++;
