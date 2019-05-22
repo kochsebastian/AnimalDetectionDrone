@@ -7,6 +7,7 @@ import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.Button;
 import cameraopencv.java.dji.com.model.StatisticEntry;
+import cameraopencv.java.dji.com.utils.GeneralUtils;
 import cameraopencv.java.dji.com.utils.ToastUtils;
 import com.dji.importSDKDemo.model.ApplicationModel;
 import com.google.android.gms.maps.*;
@@ -86,7 +87,7 @@ public class StatisticEntryActivity extends FragmentActivity implements View.OnC
         x /= stat.getDetections().size();
         y /= stat.getDetections().size();
 
-        LatLng loc = new SphericalMercatorProjection(1.0D).toLatLng(new Point(x, y));
+        LatLng loc = GeneralUtils.pointToLatLng(new Point(x, y));
         CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(loc, zoomlevel);
         gMap.moveCamera(cu);
     }

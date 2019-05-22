@@ -1,5 +1,8 @@
 package cameraopencv.java.dji.com.utils;
 
+import com.google.android.gms.maps.model.LatLng;
+import com.google.maps.android.geometry.Point;
+import com.google.maps.android.projection.SphericalMercatorProjection;
 import dji.common.error.DJIError;
 import dji.common.util.CommonCallbacks;
 
@@ -10,6 +13,8 @@ import dji.common.util.CommonCallbacks;
 public class GeneralUtils {
     public static final double ONE_METER_OFFSET = 0.00000899322;
     private static long lastClickTime;
+
+    private static SphericalMercatorProjection projection = new SphericalMercatorProjection(1.0D);
 
   //  private static final double r =6378137;
 
@@ -62,6 +67,11 @@ public class GeneralUtils {
                 ToastUtils.setResultToToast(djiError == null ? "Succeed!" : "failed!" + djiError.getDescription());
             }
         };
+    }
+
+
+    public static LatLng pointToLatLng(Point p) {
+        return projection.toLatLng(p);
     }
 
 

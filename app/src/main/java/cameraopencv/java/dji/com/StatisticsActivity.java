@@ -55,7 +55,7 @@ public class StatisticsActivity extends Activity implements View.OnClickListener
 
     @Override
     public void recyclerViewListClicked(@NotNull View v, int position) {
-        StatisticEntry s = ApplicationModel.statistics.get(position);
+        StatisticEntry s = ApplicationModel.INSTANCE.getStatistics().get(position);
         System.out.println("Selected statistic " + s.getFieldName());
 
         ApplicationModel.INSTANCE.setStatisticEntrySelected(s);
