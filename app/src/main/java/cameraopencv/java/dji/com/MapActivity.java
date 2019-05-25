@@ -280,6 +280,7 @@ public class MapActivity extends FragmentActivity implements View.OnClickListene
                 FPVDemoApplication.detectionActive = false;
             }
         };
+        FPVDemoApplication.destroyTimeline();
         FPVDemoApplication.createTimeline(this, reachedGoalCallback, reachedFirstCallback, goHomeCallback);
         FPVDemoApplication.startTimeline(flightWaypoints);
 

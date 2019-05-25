@@ -263,8 +263,8 @@ public class TimelineFlight {
             return null;
         }
 
-        WaypointMission.Builder waypointMissionBuilder = new WaypointMission.Builder().autoFlightSpeed(6f)
-                .maxFlightSpeed(6f)
+        WaypointMission.Builder waypointMissionBuilder = new WaypointMission.Builder().autoFlightSpeed(4f)
+                .maxFlightSpeed(4f)
                 .setExitMissionOnRCSignalLostEnabled(false)
                 .finishedAction(
                         WaypointMissionFinishedAction.NO_ACTION)
@@ -295,7 +295,7 @@ public class TimelineFlight {
         }
     }
 
-    public void stopTimeline() {
+    public boolean stopTimeline() {
         context_.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -306,6 +306,7 @@ public class TimelineFlight {
         missionControl.getInstance().stopTimeline();
         missionControl.unscheduleEverything();
         missionControl.removeAllListeners();
+        return true;
     }
 
     public void gotoHome() {

@@ -27,6 +27,7 @@ import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import static android.content.Context.VIBRATOR_SERVICE;
@@ -101,13 +102,99 @@ public class ObjectDetection {
         return true;
     }
 
-    static int numHeatSignatures = 0;
+
     public void trackHeatSignatures(){
 
-        if(isVideoRecording) {
-            ToastUtils.showToast("isRecording");
-            //  recordGPSData();
+
+        Bitmap sourceBitmap = Bitmap.createScaledBitmap(mVideoSurface.getBitmap(),720,480,false);
+
+        Mat frame = new Mat();
+        Utils.bitmapToMat(sourceBitmap, frame);
+        Mat copy = frame.clone();
+        if(test4Error(frame)) {
+            System.out.println("Error");
+            return;
         }
+        Imgproc.cvtColor(frame, frame, Imgproc.COLOR_RGB2GRAY);
+        Imgproc.GaussianBlur(frame,frame,new Size(10,10), 0);
+
+
+        Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, new  Size(5,5));
+        //Imgproc.dilate(frame, frame, element);
+
+        MatOfDouble mu = new MatOfDouble();
+        MatOfDouble sig = new MatOfDouble();
+        Core.meanStdDev(frame, mu, sig);
+
+        ToastUtils.showToast("mu: " +  mu.get(0, 0)[0]);
+
+
+        double sig1 = mu.get(0, 0)[0]+sig.get(0, 0)[0];
+        double sig2 = mu.get(0, 0)[0]+2.35*sig.get(0, 0)[0];
+        double sig3 = mu.get(0, 0)[0]+2.88*sig.get(0, 0)[0];
+
+        Mat frameForRect = frame.clone();
+        Imgproc.Canny(frame, frame, sig2, sig3);
+
+        List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+
+        Mat hierachie = new Mat();
+        Imgproc.findContours(frame, contours, hierachie, Imgproc.RETR_CCOMP,Imgproc.CHAIN_APPROX_SIMPLE);
+        Imgproc.drawContours(copy, contours, -1, new Scalar(0, 255, 255), 2);
+
+
+        Point p = new Point(-1000,-1000);
+        for(MatOfPoint cnt : contours) {
+
+            MatOfPoint2f cnt2f = new MatOfPoint2f( cnt.toArray() );
+
+            if(Imgproc.contourArea(cnt) > 10 && Imgproc.arcLength(cnt2f,false)>20) {
+                Rect rContour =Imgproc.boundingRect(cnt);
+                double x1 = rContour.x;
+                double y1 = rContour.y;
+                double width1 = rContour.width;
+                double height1 = rContour.height;
+                if(Math.abs(p.x -  x1) > 20 && Math.abs(p.y - y1) > 20) {
+                    p.x = (x1+(x1+width1))/2;
+                    p.y = (y1+(y1+height1))/2;
+                    Imgproc.circle(copy, p, 30, new Scalar(0, 0, 255), 2);
+                    int weight = 1;
+                    calculatePosition(p.x,p.y,weight);
+                }
+
+
+            }
+
+        }
+
+        Imgproc.Canny(frameForRect, frameForRect, sig1, sig2);
+
+        List<MatOfPoint> contours1 = new ArrayList<MatOfPoint>();
+
+        Mat hierachy = new Mat();
+        Imgproc.findContours(frameForRect, contours1, hierachy, Imgproc.RETR_CCOMP,Imgproc.CHAIN_APPROX_SIMPLE);
+
+
+        Point p1 = new Point(-1000,-1000);
+        for(int j = 0; j>=0 ;j=(int)hierachy.get(0, j)[0]) {
+            if(j>=contours1.size()) {
+                break;
+            }
+            Rect r = Imgproc.boundingRect(contours1.get(j));
+            if(hierachy.get(0,j)[2]>0) { //Check if there is a child contour
+                Imgproc.circle(copy, p1, 30, new Scalar(255, 0, 0), 4);
+                p1.x = (r.x+r.width)/2;
+                p1.y = (r.y+r.height)/2;
+                int weight = 10;
+                calculatePosition(p1.x,p1.y,weight);
+            }
+        }
+
+
+        displayAlteredImage(copy);
+
+    }
+    public void BlobDetection(){
         Bitmap sourceBitmap = Bitmap.createScaledBitmap(mVideoSurface.getBitmap(),720,480,false);
 
         Mat frame = new Mat();
@@ -135,81 +222,29 @@ public class ObjectDetection {
         double sig2 = mu.get(0, 0)[0]+2.35*sig.get(0, 0)[0];
         double sig3 = mu.get(0, 0)[0]+2.88*sig.get(0, 0)[0];
 
-        Mat frameForRect = frame.clone();
-        Imgproc.Canny(frame, frame, sig2, sig3);
-
-        List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-
-        Mat hierachie = new Mat();
-        Imgproc.findContours(frame, contours, hierachie, Imgproc.RETR_CCOMP,Imgproc.CHAIN_APPROX_SIMPLE);
-        Imgproc.drawContours(copy, contours, -1, new Scalar(0, 255, 255), 2);
-
-        int tmpnum = 0;
-        int new_object =0;
+        ColorBlobDetector a = new ColorBlobDetector();
+        a.setColorRadius(5);
+        a.setGreyValue(mu.get(0,0)[0]+6*sig.get(0, 0)[0]);
+        a.setMinContourArea(1);
+        a.process(frame.clone());
+        List<MatOfPoint> contu = a.getContours();
         Point p = new Point(-1000,-1000);
-        for(MatOfPoint cnt : contours) {
+        for(MatOfPoint cnt : contu) {
+            Rect rContour = Imgproc.boundingRect(cnt);
 
-            MatOfPoint2f cnt2f = new MatOfPoint2f( cnt.toArray() );
+            double x1 = rContour.x;
+            double y1 = rContour.y;
+            double width1 = rContour.width;
+            double height1 = rContour.height;
+            if (Math.abs(p.x - x1) > 20 && Math.abs(p.y - y1) > 20) {
 
-            if(Imgproc.contourArea(cnt) > 10 && Imgproc.arcLength(cnt2f,false)>20) {
-                Rect rContour =Imgproc.boundingRect(cnt);
-                double x1 = rContour.x;
-                double y1 = rContour.y;
-                double width1 = rContour.width;
-                double height1 = rContour.height;
-                if(Math.abs(p.x -  x1) > 20 && Math.abs(p.y - y1) > 20) {
-                    tmpnum++;
-                    p.x = (x1+(x1+width1))/2;
-                    p.y = (y1+(y1+height1))/2;
-                    Imgproc.circle(copy, p, 30, new Scalar(0, 0, 255), 2);
-                    int weight = 1;
-                    calculatePosition(p.x,p.y,weight);
-                }
-                //System.out.println("x: " + x);
-                //System.out.println("y: " + y);
-
-            }
-
-        }
-
-        Imgproc.Canny(frameForRect, frameForRect, sig1, sig2);
-
-        List<MatOfPoint> contours1 = new ArrayList<MatOfPoint>();
-
-        Mat hierachy = new Mat();
-        Imgproc.findContours(frameForRect, contours1, hierachy, Imgproc.RETR_CCOMP,Imgproc.CHAIN_APPROX_SIMPLE);
-
-
-        Point p1 = new Point(-1000,-1000);
-        for(int j = 0; j>=0 ;j=(int)hierachy.get(0, j)[0]) {
-            if(j>=contours1.size()) {
-                break;
-            }
-            Rect r = Imgproc.boundingRect(contours1.get(j));
-            if(hierachy.get(0,j)[2]>0) { //Check if there is a child contour
-                //Imgproc.rectangle(copy, r, new Scalar(0, 0, 255), 2);
-                Imgproc.rectangle(copy, r.tl(), r.br(), new Scalar(0, 0, 255), 2);
-                p1.x = (r.x+r.width)/2;
-                p1.y = (r.y+r.height)/2;
-                int weight = 10;
-                calculatePosition(p1.x,p1.y,weight);
+                p.x = (x1 + (x1 + width1)) / 2;
+                p.y = (y1 + (y1 + height1)) / 2;
+                Imgproc.circle(copy, p, 30, new Scalar(0, 0, 255), 2);
+                int weight = 1;
+                calculatePosition(p.x, p.y, weight);
             }
         }
-
-        // Number of Heatsignatures
-        if(tmpnum != numHeatSignatures || tmpnum == 0) {
-
-            if(tmpnum > numHeatSignatures) {
-                //  vibratePhone();
-            }
-            else {
-                new_object = 0;
-            }
-            numHeatSignatures = tmpnum;
-
-        }
-
-
         displayAlteredImage(copy);
 
     }
@@ -311,10 +346,10 @@ public class ObjectDetection {
         camera.setThermalScene(SettingsDefinitions.ThermalScene.PROFILE_1,null);
         camera.setThermalPalette(SettingsDefinitions.ThermalPalette.WHITE_HOT,null);
         camera.setThermalIsothermEnabled(false,null);
-        camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.AUTO,null);
+        camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.HIGH,null);
         //  camera.setThermalGainMode(SettingsDefinitions.ThermalGainMode.HIGH,null);
         camera.setThermalDDE(-20,null);
-        camera.setThermalACE(0,null);
+        camera.setThermalACE(8,null);
         camera.setThermalSSO(100,null);
         camera.setThermalContrast(32,null);
         camera.setThermalBrightness(8192,null);
@@ -353,3 +388,87 @@ public class ObjectDetection {
         }
     }*/
 }
+
+class ColorBlobDetector {
+    // Lower and Upper bounds for range checking in HSV color space
+    private double mLowerBound = 0;
+    private double mUpperBound = 0;
+    // Minimum contour area in percent for contours filtering
+    private static double mMinContourArea = 0.1;
+    // Color radius for range checking in HSV color space
+    private double mGreyRadius = 0;
+    private Mat mSpectrum = new Mat();
+    private List<MatOfPoint> mContours = new ArrayList<MatOfPoint>();
+
+    // Cache
+    private Mat mPyrDownMat = new Mat();
+    private Mat mGreyImage = new Mat();
+    private Mat mMask = new Mat();
+    private Mat mDilatedMask = new Mat();
+    private Mat mHierarchy = new Mat();
+
+    public void setColorRadius(double radius) {
+        mGreyRadius = radius;
+    }
+
+    public void setGreyValue(double value) {
+        double minH = (value >= mGreyRadius) ? value-mGreyRadius : 0;
+        double maxH = (value+mGreyRadius <= 255) ? value+mGreyRadius : 255;
+
+        mLowerBound = minH;
+        mUpperBound = maxH;
+
+
+    }
+
+
+
+    public void setMinContourArea(double area) {
+        mMinContourArea = area;
+    }
+
+    public void process(Mat greyImage) {
+        Imgproc.pyrDown(greyImage, mPyrDownMat);
+        Imgproc.pyrDown(mPyrDownMat, mPyrDownMat);
+
+        Imgproc.cvtColor(mPyrDownMat, mGreyImage, Imgproc.COLOR_RGB2GRAY);
+
+        //Core.inRange(mHsvMat, new Scalar(mLowerBound,mLowerBound,mLowerBound), new Scalar(mUpperBound,mUpperBound,mUpperBound), mMask);
+
+        Imgproc.threshold(mGreyImage, mMask, mLowerBound, mUpperBound, Imgproc.THRESH_BINARY);
+
+        Imgproc.dilate(mMask, mDilatedMask, new Mat());
+
+        List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+
+        Imgproc.findContours(mDilatedMask, contours, mHierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+
+        // Find max contour area
+        double maxArea = 0;
+        Iterator<MatOfPoint> each = contours.iterator();
+        while (each.hasNext()) {
+            MatOfPoint wrapper = each.next();
+            double area = Imgproc.contourArea(wrapper);
+            if (area > maxArea)
+                maxArea = area;
+        }
+
+        // Filter contours by area and resize to fit the original image size
+        mContours.clear();
+        each = contours.iterator();
+        while (each.hasNext()) {
+            MatOfPoint contour = each.next();
+            if (Imgproc.contourArea(contour) > mMinContourArea*maxArea) {
+                Core.multiply(contour, new Scalar(4,4), contour);
+                mContours.add(contour);
+            }
+        }
+
+    }
+
+    public List<MatOfPoint> getContours() {
+        return mContours;
+    }
+}
+
+

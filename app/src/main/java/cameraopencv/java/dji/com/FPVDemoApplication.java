@@ -238,8 +238,8 @@ public class FPVDemoApplication extends Application  {
             return;
             //throw new RuntimeException("Can not stop timeline: not existing.");
         }
-        tlf.stopTimeline();
-        tlf = null;
+        if(tlf.stopTimeline())
+            tlf = null;
     }
     public static void abortAndHome(){
         if (tlf == null) {
