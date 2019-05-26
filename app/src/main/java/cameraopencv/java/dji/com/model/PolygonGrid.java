@@ -32,6 +32,7 @@ public class PolygonGrid {
 
     private double oneMeter_x = ONE_METER_OFFSET;
     private double oneMeter_y = ONE_METER_OFFSET;
+    private static double overlap = (1 - 0.3);
 
 
     private void calculateGridSize (double altitude,double latitude){
@@ -47,7 +48,7 @@ public class PolygonGrid {
         imageWidth = 2* Math.tan(Math.toRadians(fov_angle_x/2)) * droneAltitude *  calcLongitudeOffset(latitude);
         imageHeight = 2* Math.tan(Math.toRadians(fov_angle_y/2)) * droneAltitude * ONE_METER_OFFSET;
     }
-    
+
     public boolean isContainedInField(LatLng point) {
         Point2D p2D = new Point2D(point.latitude,point.longitude);
         return p.contains(p2D);
@@ -125,7 +126,7 @@ public class PolygonGrid {
                 }
                 y+=oneMeter_y;
             }
-            x+=imageWidth;
+            x+=imageWidth*overlap;
             y=p.getMaxY();
             dir = -1;
             while(y >= p.getMinY()) {
@@ -148,7 +149,7 @@ public class PolygonGrid {
 
             }
             y=p.getMinY();
-            x+=imageWidth;
+            x+=imageWidth*overlap;
 
         }
         x=p.getMaxX()-imageWidth-oneMeter_x;
@@ -218,7 +219,7 @@ public class PolygonGrid {
 
                 }
 
-                x+=oneMeter_x;
+                x+=oneMeter_x*overlap;
             }
             y+=imageHeight;
             x=p.getMaxX();
@@ -243,7 +244,7 @@ public class PolygonGrid {
             x=p.getMinX();
 
 
-            y+=imageHeight;
+            y+=imageHeight*overlap;
 
         }
         y=p.getMaxY()-imageHeight-oneMeter_y;
@@ -302,7 +303,7 @@ public class PolygonGrid {
                     && Math.abs((myCenters.get(i).x) - myCenters.get(i + 1).x) < THRESHOLD)) {
 //                if(delete < 5){
 //                    delete++;
-                    myShapes.set(i, null);
+                myShapes.set(i, null);
 //                }else{
 //                    delete = 0;
 //                }
@@ -313,7 +314,7 @@ public class PolygonGrid {
                     && Math.abs((myCenters.get(i).x) - myCenters.get(i + 1).x) < THRESHOLD)) {
 //                if(delete < 5){
 //                    delete++;
-                    myShapes.set(i, null);
+                myShapes.set(i, null);
 //                }else{
 //                    delete = 0;
 //                }
@@ -338,7 +339,7 @@ public class PolygonGrid {
                     && Math.abs((myCenters.get(i).y) - myCenters.get(i + 1).y) < THRESHOLD)) {
 //                if(delete < 5){
 //                    delete++;
-                    myShapes.set(i, null);
+                myShapes.set(i, null);
 //                }else{
 //                    delete = 0;
 //                }
@@ -350,7 +351,7 @@ public class PolygonGrid {
                     && Math.abs((myCenters.get(i).y) - myCenters.get(i + 1).y) < THRESHOLD)) {
 //                if(delete < 5){
 //                    delete++;
-                    myShapes.set(i, null);
+                myShapes.set(i, null);
 //                }else{
 //                    delete = 0;
 //                }
@@ -389,5 +390,3 @@ public class PolygonGrid {
 
 
 }
-
-
