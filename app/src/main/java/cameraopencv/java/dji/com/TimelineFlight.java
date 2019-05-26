@@ -212,7 +212,6 @@ public class TimelineFlight {
                 updateTimelineStatus(element, event, error);
             }
         };
-        //   waypointIndex=0;
 
         List<TimelineElement> elements = new ArrayList<>();
 

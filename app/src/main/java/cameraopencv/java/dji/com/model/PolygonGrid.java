@@ -48,7 +48,7 @@ public class PolygonGrid {
         imageWidth = 2* Math.tan(Math.toRadians(fov_angle_x/2)) * droneAltitude *  calcLongitudeOffset(latitude);
         imageHeight = 2* Math.tan(Math.toRadians(fov_angle_y/2)) * droneAltitude * ONE_METER_OFFSET;
     }
-    
+
     public boolean isContainedInField(LatLng point) {
         Point2D p2D = new Point2D(point.latitude,point.longitude);
         return p.contains(p2D);
@@ -303,7 +303,7 @@ public class PolygonGrid {
                     && Math.abs((myCenters.get(i).x) - myCenters.get(i + 1).x) < THRESHOLD)) {
 //                if(delete < 5){
 //                    delete++;
-                    myShapes.set(i, null);
+                myShapes.set(i, null);
 //                }else{
 //                    delete = 0;
 //                }
@@ -314,7 +314,7 @@ public class PolygonGrid {
                     && Math.abs((myCenters.get(i).x) - myCenters.get(i + 1).x) < THRESHOLD)) {
 //                if(delete < 5){
 //                    delete++;
-                    myShapes.set(i, null);
+                myShapes.set(i, null);
 //                }else{
 //                    delete = 0;
 //                }
@@ -339,7 +339,7 @@ public class PolygonGrid {
                     && Math.abs((myCenters.get(i).y) - myCenters.get(i + 1).y) < THRESHOLD)) {
 //                if(delete < 5){
 //                    delete++;
-                    myShapes.set(i, null);
+                myShapes.set(i, null);
 //                }else{
 //                    delete = 0;
 //                }
@@ -351,7 +351,7 @@ public class PolygonGrid {
                     && Math.abs((myCenters.get(i).y) - myCenters.get(i + 1).y) < THRESHOLD)) {
 //                if(delete < 5){
 //                    delete++;
-                    myShapes.set(i, null);
+                myShapes.set(i, null);
 //                }else{
 //                    delete = 0;
 //                }
@@ -390,5 +390,3 @@ public class PolygonGrid {
 
 
 }
-
-
